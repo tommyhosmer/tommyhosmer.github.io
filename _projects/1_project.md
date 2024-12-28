@@ -1,10 +1,10 @@
 ---
 layout: page
-title: project 1
-description: with background image
-img: assets/img/12.jpg
+title: Kelvin-Helmholtz Instability
+description: Compact finite differences for compressible gas dynamics. 
+img: assets/img/KH_instability.gif
 importance: 1
-category: work
+category: class
 related_publications: true
 ---
 
@@ -18,7 +18,7 @@ To give your project a background in the portfolio page, just add the img tag to
     layout: page
     title: project
     description: a project with a background image
-    img: /assets/img/12.jpg
+    img: /assets/img/KH_instability.gif
     ---
 
 <div class="row">
