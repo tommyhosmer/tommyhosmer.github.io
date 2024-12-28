@@ -8,18 +8,16 @@ category: class
 related_publications: true
 ---
 
-Every project has a beautiful feature showcase page.
-It's easy to include images in a flexible 3-column grid format.
-Make your photos 1/3, 2/3, or full width.
+In my Numerical Solutions of Partial Differential Equations course, taught by Per-Olof Persson {% cite berkeleyMath228B %}, we discretized with a fourth order compact Pade scheme {% cite lele1992compact} and filtered the solution with a sixth order filter. This allowed for higher order solutions on a 256x256 grid.
 
 To give your project a background in the portfolio page, just add the img tag to the front matter like so:
 
-    ---
+    <!-- ---
     layout: page
     title: project
     description: a project with a background image
     img: /assets/img/KH_instability.gif
-    ---
+    --- -->
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
