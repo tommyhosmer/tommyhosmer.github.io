@@ -17,6 +17,6 @@ nav_order: 6
 <!-- ![Temperature Evolution](../assets/img/temperature_evolution.gif) -->
 <div style="text-align: center;">
   <img src="../assets/img/temperature_evolution.gif" alt="Temperature Evolution" style="max-width: 75%; height: auto;">
-  <p><em>Originally the "laser" in this problem was modeled as static. I modified the project to have it trace this figure-8. </em></p>
+  <p><em>Originally the "laser" in this problem was modeled as static. I modified the project to have it trace this figure-8.  </em></p>
 </div>
 ---
