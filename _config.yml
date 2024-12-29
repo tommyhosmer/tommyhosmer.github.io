@@ -152,6 +152,9 @@ collections:
   projects:
     output: true
     permalink: /:collection/:title/
+  courses:
+    output: true
+    permalink: /courses/:path/
 
 announcements:
   enabled: false
@@ -235,6 +238,7 @@ defaults:
 
 sass:
   style: compressed
+
 
 # -----------------------------------------------------------------------------
 # Jekyll Minifier
