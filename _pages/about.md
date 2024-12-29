@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='https://msol.berkeley.edu'>Multiphysics Simulation and Optimization Lab</a>. Address. Contacts. Motto. Etc.
+subtitle: tommyhosmer@berkeley.edu // 949-257-7638
 
 profile:
   align: right
@@ -18,6 +18,8 @@ selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 ---
 
-I am a PhD student in the Mechanical Engineering Department at UC Berkeley. My advisor is Professor Tarek Zohdi of the [Multiphysics Simulation and Optimization Lab](https://msol.berkeley.edu). My current research is in physics-based simulations for optimal path planning with applications to autonomous vehicles in agriculture. 
+I am a PhD student in the Mechanical Engineering Department at UC Berkeley. My advisor is Professor Tarek Zohdi of the [Multiphysics Simulation and Optimization Lab](https://msol.berkeley.edu). My current research is in physics-based simulations for optimal path planning with applications to autonomous vehicles in agriculture.
+
+
 
 
