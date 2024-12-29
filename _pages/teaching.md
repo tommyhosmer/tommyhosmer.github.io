@@ -14,5 +14,5 @@ nav_order: 6
 **University:** University of California, Berkeley  
 **Description:** Introduction to the mechanics and numerical methods relevant to manufacturing processes including sintering, compaction, laser processing, and material design. Genetic algorithms are applied for design optimization. Students gain hands-on experience with 7 programming assignments.
 
-![Temperature Evolution](/Users/tommyhosmer/Documents/Life/website/tommyhosmer.github.io/_site/assets/img/temperature_evolution.gif)
+![Temperature Evolution](temperature_evolution.gif)
 ---
