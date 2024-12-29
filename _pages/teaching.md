@@ -9,7 +9,8 @@ nav_order: 6
 
 
 ## Modeling and Simulation of Advanced Manufacturing Processes
-**Year:** 2024  
+**Position:** Lead Teaching Assistant
+**Semester:** Spring 2024  
 **University:** University of California, Berkeley  
 **Description:** Introduction to the mechanics and numerical methods relevant to manufacturing processes including sintering, compaction, laser processing, and material design. Genetic algorithms are applied for design optimization. Students gain hands-on experience with 7 programming assignments.
 
