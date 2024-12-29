@@ -60,16 +60,30 @@
   
   "skills": [
     {
-      "name": "Physics",
-      "level": "Master",
+      "name": "Programming",
       "icon": "fa-solid fa-hashtag",
       "keywords": [
-        "Quantum Mechanics",
-        "Quantum Computing",
-        "Quantum Information",
-        "Quantum Cryptography",
-        "Quantum Communication",
-        "Quantum Teleportation"
+        "Python",
+        "Julia",
+        "MATLAB",
+        "C++"
+      ]
+    },
+    {
+      "name": "Numerical Methods",
+      "icon": "fa-solid fa-hashtag",
+      "keywords": [
+        "Finite Differences",
+        "Finite Elements",
+        "Fourier and Laplace Transforms"
+      ]
+    },
+    {
+      "name": "Model Order Reduction",
+      "icon": "fa-solid fa-hashtag",
+      "keywords": [
+        "Dynamic Mode Decomposition",
+        "Latent Space Dynamics Identification"
       ]
     }
   ],
@@ -83,11 +97,10 @@
       ]
     },
     {
-      "name": "Model Order Reduction",
+      "name": "Computational Geometry",
       "icon": "fa-solid fa-tag",
       "keywords": [
-        "Latent Space Dynamics Identification",
-        "Dynamic Mode Decomposition"
+        "Unstructured Mesh Generation"
       ]
     }
   ],
