@@ -8,7 +8,7 @@ category: class
 related_publications: true
 ---
 
-In my Numerical Solutions of Partial Differential Equations course, taught by Per-Olof Persson {% cite berkeleyMath228B %}, we discretized with a fourth order compact Pade scheme and filtered the solution with a sixth order filter. This allowed for higher order solutions on a 256x256 grid.
+In my Numerical Solutions of Partial Differential Equations course, taught by Per-Olof Persson {% cite berkeleyMath228B %}, we discretized with a fourth order compact Pade scheme {% cite lele1992compact %} and filtered the solution with a sixth order filter. This allowed for higher order solutions on a 256x256 grid.
 
 
 <div style="text-align: center;">
