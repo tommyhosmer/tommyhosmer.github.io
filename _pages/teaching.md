@@ -11,10 +11,7 @@ nav_order: 6
 ## Modeling and Simulation of Advanced Manufacturing Processes
 **Year:** 2024  
 **University:** University of California, Berkeley  
-**Description:** Introduction to the mechanics and numerical methods relevant to manufacturing processes including sintering, compaction, laser processing, and material design. Students gain hands-on experience with 7 programming and theory assignments.
+**Description:** Introduction to the mechanics and numerical methods relevant to manufacturing processes including sintering, compaction, laser processing, and material design. Genetic algorithms are applied for design optimization. Students gain hands-on experience with 7 programming assignments.
 
-<video width="600" controls>
-  <source src="assets/video/temperature_evolution.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![Temperature Evolution](/Users/tommyhosmer/Documents/Life/website/tommyhosmer.github.io/_site/assets/img/temperature_evolution.gif)
 ---
