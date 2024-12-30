@@ -424,7 +424,7 @@ ninja.data = [{
         title: 'LinkedIn',
         section: 'Socials',
         handler: () => {
-          window.open("https://www.linkedin.com/in/Thomas Hosmer", "_blank");
+          window.open("https://www.linkedin.com/in/thomas-hosmer", "_blank");
         },
       },{
       id: 'light-theme',
