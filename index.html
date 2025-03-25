@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Personal Website</title>
+    <title>Tommy Hosmer</title>
     <meta name="google-site-verification" content="LcKUzeNNRH3LBkjOGOvX1OTljpJ7ONpENVoew9UtcIk" />
     <style>
         body {
@@ -19,7 +19,7 @@
         nav a {
             color: white;
             text-decoration: none;
-            padding: 14px 20px;
+            padding: 8px 10px;
             display: inline-block;
         }
         nav a:hover {
@@ -27,21 +27,52 @@
         }
         .content {
             padding: 20px;
+            white-space: pre-line; /* Preserve whitespace and line breaks */
+            line-height: 1.6; /* Adjust line height for better readability */
+            text-align: center; /* Center text */
         }
         .experience-item {
             display: flex;
             align-items: center;
+            justify-content: center; /* Center content */
         }
-        .experience-item::before {
+        /* .experience-item::before {
             content: "• ";
             color: black;   
             padding-right: 5px; 
-        }
+        } */
         .project-item {
-            margin-bottom: 20px; /* Adjust the margin as needed */
+            margin-bottom: 10px; /* Adjust the margin as needed */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content */
         }
         .cv-project-item {
-            margin-bottom: 10px; /* Adjust the margin as needed */
+            margin-bottom: 5px; /* Adjust the margin as needed */
+        }
+        figure {
+            margin: 0 auto; /* Center figures */
+        }
+        img {
+            margin: 0 auto; /* Center images */
+        }
+        strong {
+            display: block; /* Make strong elements block-level to center them */
+            text-align: center; /* Center text inside strong elements */
+        }
+        /* Three image containers (use 25% for four, and 50% for two, etc) */
+        .column {
+        float: left;
+        width: 33.33%;
+        display: flex;
+        align-items: center;
+        }
+
+        /* Clear floats after image containers */
+        .row::after {
+        content: "";
+        clear: both;
+        display: table;
         }
     </style>
     <script>
@@ -49,20 +80,6 @@
             document.querySelectorAll('.content').forEach(page => page.style.display = 'none');
             document.getElementById(pageId).style.display = 'block';
         }
-
-        function loadPage(pageId, url) {
-            fetch(url)
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById(pageId).innerHTML = data;
-                });
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            loadPage('home', 'home.html');
-            loadPage('projects', 'projects.html');
-            loadPage('cv', 'cv.html');
-        });
     </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -74,8 +91,233 @@
         <a href="#" onclick="showPage('cv')">CV</a>
     </nav>
     
-    <div id="home" class="content"></div>
-    <div id="projects" class="content" ></div>
-    <div id="cv" class="content"></div>
+    <div id="home" class="content">
+        <h1>Welcome</h1>
+        <img src="./img/headshot.jpg" alt="Headshot" style="width:150px;height:150px;margin-top:10px;">
+        <p>
+            Hi I'm Tommy. I'm a PhD student in the Mechanical Engineering Department at UC Berkeley
+            studying computational science. 
+        </p>
+    </div>
+    
+    <div id="projects" class="content" style="display: none;">
+        <h1>Projects</h1>
+        <p>Here is some of my recent work.</p>
+        <ul>
+            <li class="project-item">
+                <div style="flex: 1;">
+                    <b>1:</b> Numerical Solution to Euler's Equations for Compressible Gas Dynamics.
+                    <a href="#" onclick="showPage('project1')">Read more</a>
+                </div>
+                <figure>
+                    <img src="./img/KH_instability.gif" alt="Project 1 image" style="width:250px;height:250px;vertical-align:middle;margin-top:10px;">
+                    
+                </figure>
+            </li>
+            <li class="project-item">
+                <div style="flex: 1;">
+                    <b>2:</b> Parallel Particle Simulation: OpenMP, MPI, & CUDA.
+                    <a href="#" onclick="showPage('project2')">Read more</a>
+                </div>
+                <figure>
+                    <img src="./img/267_particles.gif" alt="Project 2 image" style="width:250px;height:250px;vertical-align:middle;margin-top:10px;">
+                    
+                </figure>
+            </li>
+            <li class="project-item">
+                <div style="flex: 1;">
+                    <b>3:</b> Low Rank Tensor Approximation for Accelerated ESRGAN.
+                    <a href="#" onclick="showPage('project3')">Read more</a>
+                </div>
+                <figure>
+                    <img src="./img/wolves.png" alt="Project 3 image" style="width:250px;height:250px;vertical-align:middle;margin-top:10px;">
+                    
+                </figure>
+            </li>
+        </ul>
+    </div>
+    
+    <div id="project1" class="content" style="display: none;">
+        <h1>Numerical Solution to Euler's Equations for Compressible Gas Dynamics</h1>
+        <p> 
+            In my Numerical Solutions to PDEs course taught by Professor Per-Olof Persson, we
+            discretized a square domain in space with a fourth order compact Pade scheme [1] and filtered
+            with a sixth order compact filter. Filtering is necessary to dissipate higher order noise 
+            and ensure stability of the fourth order solution. Time integration was solved via RK4. 
+            All coding was done in Julia from scratch. 
+        </p>
+        <p>
+            The Euler Vortex can be solved analytically and served as our benchmark for accuracy of the finite
+            difference solver. The Kelvin-Helmholtz Instability is then solved numerically.
+        </p>
+        <figure>
+            <img src="./img/euler_vortex.gif" alt="Euler Vortex" style="width:250px;height:250px;vertical-align:middle;margin-right:10px;">
+            <figcaption>Euler Vortex</figcaption>
+        </figure>
+        <figure>
+            <img src="./img/KH_instability.gif" alt="KH Instability" style="width:250px;height:250px;vertical-align:middle;margin-right:15px;">
+            <figcaption>KH Instability</figcaption>
+        </figure>
+        <h2>References</h2>
+        <p>
+            [1] S. K. Lele, “Compact finite difference schemes with spectral-like resolution,”
+            Journal of Computational Physics, vol. 103, no. 1, pp. 16–42, Nov. 1992, doi:
+            https://doi.org/10.1016/0021-9991(92)90324-r.
+        </p>
+    </div>
+    
+    <div id="project2" class="content" style="display: none;">
+        <h1>Parallel Particle Simulation: OpenMP, MPI, and CUDA</h1>
+        <p>
+            A simulation of particle interactions is parallelized using, separately, OpenMP, MPI, and CUDA. Before
+            the simulation could be parallelized, it was rewritten to achieve O(n) scaling in the serial implementation.
+            Results demonstrate CUDA achieved higher performance against the other two APIs. This work was done as 
+            part of the Applications of Parallel Computers course at UC Berkeley, taught by Professors Jim Demmel and 
+            Aydin Buluc. 
+        </p>
+        <figure>
+            <img src="./img/linear_complexity.png" alt="cuda vs omp vs mpi" style="width:300px;height:200px;vertical-align:middle;margin-right:10px;">
+            <figcaption>Speed of simulation vs particle count demonstrates CUDA superiority at these scales.</figcaption>
+        </figure>
+        <p>
+            Below are the strong and weak scaling of the OpenMP and MPI implementations, respectively. Weak scaling 
+            involves increasing thread/rank count while maintaining a constant number of particles per thread. For 
+            example an 8000 particle simulation on 1 thread would be a 16000 particle simulation on 2 threads. In theory, 
+            weak scaling should maintain constant performance, but this is never the case do to communication becoming 
+            a larger bottleneck as the overall simulation grows. Strong scaling maintains a constant particle count and
+            increases total threads. In theory, strong scaling would demonstrate performance improving log linearly with
+            thread count. In reality it struggles when there are too many threads, as it becomes less efficient to communicate
+            when there are very few particles per processor or rank. 
+        </p>
+        <figure style="display: inline-block; margin-right: 10px;"></figure>
+            <img src="./img/omp_strong.png" alt="OpenMP Strong Scaling" style="width:300px;height:200px;vertical-align:middle;">
+            <figcaption>OpenMP Strong Scaling</figcaption>
+        </figure>
+        <figure style="display: inline-block;">
+            <img src="./img/omp_weak.png" alt="OpenMP Weak Scaling" style="width:300px;height:200px;vertical-align:middle;">
+            <figcaption>OpenMP Weak Scaling</figcaption>
+        </figure>
+        <figure style="display: inline-block; margin-right: 10px;"></figure>
+            <img src="./img/mpi_strong.png" alt="MPI Strong Scaling" style="width:300px;height:200px;vertical-align:middle;">
+            <figcaption>MPI Strong Scaling</figcaption>
+        </figure>
+        <figure style="display: inline-block;">
+            <img src="./img/mpi_weak.png" alt="MPI Weak Scaling" style="width:300px;height:200px;vertical-align:middle;">
+            <figcaption>MPI Weak Scaling</figcaption>
+        </figure>
+    </div>
+
+    <div id="project3" class="content" style="display: none;">
+        <h1>Low-Rank Approximations for Convolutional Layers in Super Resolution Applications</h1>
+        <p>
+            The convolutional operations applied in CNNs rely on fourth order tensors. In our Numerical Linear
+            Algebra class taught by Professor Jim Demmel, my colleague Mostafa Sedky and I tested
+            multiple tensor decompositions for accelerating the convolutional operation in the context
+            of super resolution applications, specifically the ESRGAN framework [1]. The
+            singular value decomposition (SVD) outperformed canonical polyadic (CP) decomposition in speed.
+            The SVD even slightly improved upon image quality compared to the original image with respect to
+            peak signal to noise ratio and the structural similarity index measure.
+        </p>
+        <figure>
+            <img src="./img/LR_esrgan_plot.png" alt="LR ESRGAN" style="width:250px;height:250px;vertical-align:middle;margin-right:10px;">
+            <figcaption>The SVD was faster, but CP still improved the speed of the super resolution enhancement.</figcaption>
+        </figure>
+        <figure>
+            <img src="./img/esrgan_chart.png" alt="ESRGAN chart" style="width:300px;height:75px;vertical-align:middle;margin-right:10px;">
+            <figcaption>Image quality metrics, with the SVD showing slightly better measurements than the original enhancement.</figcaption>
+        </figure>
+        <h2>References</h2>
+        <p>
+            [1] X. Wang et al., “ESRGAN: Enhanced Super-Resolution Generative Adversarial Networks,”
+            arXiv.org, 2018. https://arxiv.org/abs/1809.00219
+        </p>
+    </div>
+    
+    <div id="cv" class="content" style="display: none;">
+        <h1>Curriculum Vitae</h1>
+        <p>
+            <a href="./files/CV_T_Hosmer.pdf" target="_blank">Download PDF Version</a>
+        </p>
+        <h2>Education</h2>
+        <p>
+            <strong>Doctor of Philosophy in Mechanical Engineering</strong>
+            University of California, Berkeley (2023 - Present)
+        <b>GPA:</b> 3.93</p>
+        <p>
+            <strong>Bachelor of Science in Environmental Engineering Science</strong>
+            University of California, Berkeley (2019 - 2023)
+         <b>GPA:</b> 3.64</p>
+        
+        <h2>Experience</h2>
+        <p >
+            <b>Graduate Student Researcher</b> <br>
+            Multiphysics Simulation and Optimization Lab <br>
+            Berkeley, CA (Aug 2023 - Present)
+        </p>
+        <ul>
+            <li>Conducting research under Dr. Tarek Zohdi in the fields of computational science and design optimization</li>
+            <li>Research Topic: Informative Path Planning for Mapping Dynamic Adversarial Populations</li>
+            <li>Gaussian Processes and Level Set Estimation to track population modeled by stochastic differential equations</li>
+        </ul>
+        <p >
+            <b>Graduate Student Researcher</b>  <br>
+            Lawrence Livermore National Laboratory <br>
+            Livermore, CA (May 2024 - Dec 2024)
+        </p>
+        <ul>
+            <li>Subcontractor for Center for Applied Scientific Computing </li>  
+            <li>ARPA-E funded project to develop model order reduction techniques of 1D-1V Vlasov-Poisson solvers for fusion research</li>
+            <li>Managed dozens of terabytes of data from generation to reduction via FFT and dynamic mode decomposition</li>
+            <li>Explored long-term phenomena in two-stream instabilities and KEEN waves</li>
+        </ul>
+        <p >
+            <b>Graduate Student Instructor</b> <br>
+            UC Berkeley Mechanical Engineering Department <br>
+            Berkeley, CA (Jan 2024 - May 2024)
+        </p>
+        <ul>
+            <li>Lead Teaching Assistant for graduate level mechanical engineering course of 50 students</li>
+            <li>Responsible for design of 7 coding projects and final exam, leading discussion sections, and holding office hours</li>
+            <li>Substituted as lecturer on multiple occasions when professor was unable to attend</li>
+        </ul>
+        <p >
+            <b>Mechanical Project Engineer Intern</b> <br> 
+            TAE Technologies <br>
+            Foothill Ranch, CA (May 2023 - Aug 2023)
+        </p>
+        <ul>
+            <li>Assembled multi-component test stand and a data acquisition system for thermomechanical analysis</li>
+            <li>Conducted and collected data for 50+ experiments to quantify flow and heat transfer performance</li>
+            <li>Post-processed 10000+ data points in Excel and Python to guide further design of experiment</li>
+        </ul>
+        
+        <h2>Projects</h2>
+        <ul>
+            <li class="cv-project-item">
+                <strong>Senior Thesis:</strong> Digital Twin and Machine Learning Frameworks for Control of Data Center Energy Management Systems.
+                <br>
+                <em>Keywords:</em> Genetic Algorithms, Neural Networks, Model Order Reduction, Energy Management Systems
+            </li>
+            <li class="cv-project-item">
+                <strong>Numerical Linear Algebra:</strong> Low-Rank Approximation for Convolutional Layers in Super Resolution Applications.
+                <br>
+                <em>Keywords:</em> Singular Value Decomposition, Canonical Polyadic Decomposition, Convolutional Neural Networks
+            </li>
+            <li class="cv-project-item">
+                <strong>Pedagogy:</strong> 16 page educational guide to introduce deep learning for beginning programmers.
+                <br>
+                Published on the website of <a href="https://aifs.ucdavis.edu/educational-modules/module-6a-artificial-neural-networks">AI Institute for Next Generation Food Systems</a>.
+                <br>
+                <em>Keywords:</em> Deep Learning, Pedagogy
+            </li>
+        </ul>
+        
+        <h2>Skills</h2>
+        <ul>
+            <li><strong>Technical Skills:</strong> Genetic Algorithms, Computational Physics, Data Visualization</li>
+            <li><strong>Languages:</strong> C/C++, Python, MATLAB, Julia</li>
+            <li><strong>Tools:</strong> CUDA, TensorFlow, PyTorch, Keras, scikit-learn, pandas, NumPy, HDF5</li>
+        </ul>
+    </div>
 </body>
 </html>
