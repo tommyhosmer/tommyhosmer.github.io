@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Your Name</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Category filter bar ── */
+    .categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .cat-btn {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+
+    .cat-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .cat-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Post category tag (inline) ── */
+    .post-cat {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-left: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    /* Hidden posts */
+    .post-list li.hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="site-wrapper">
+
+  <header>
+    <h1><a href="index.html">Your Name</a></h1>
+    <nav>
+      <a href="blog.html" class="active">Blog</a>
+      <a href="publications.html">Publications</a>
+      <a href="code.html">Code</a>
+      <span class="email-hint">y[surname]@gmail.com</span>
+    </nav>
+  </header>
+
+  <h2 class="page-heading">Blog</h2>
+
+  <!-- ── Category filter buttons ────────────────────────
+       To add a new category:
+         1. Add a button here: <button class="cat-btn" data-cat="your-category">Your Category</button>
+         2. Tag posts below with: data-cat="your-category"
+       Category names must match exactly (case-sensitive).
+  ─────────────────────────────────────────────────────── -->
+  <div class="categories">
+    <button class="cat-btn active" data-cat="all">All</button>
+    <button class="cat-btn" data-cat="freediving">Freediving</button>
+    <button class="cat-btn" data-cat="bayesian-inference">Bayesian Inference</button>
+    <button class="cat-btn" data-cat="diffeqs">Differential Equations</button>
+  </div>
+
+  <!-- ── Blog Posts ──────────────────────────────────────
+       Each <li> needs a data-cat attribute matching one
+       of the category buttons above.
+       - Update href, title, and date as before.
+       - Set data-cat="your-category" on each <li>.
+       Duplicate or delete <li> blocks as needed.
+  ─────────────────────────────────────────────────────── -->
+  <ul class="post-list">
+
+    <li data-cat="freediving">
+      <a href="posts/post-slug-here.html">Title of blog post one</a>
+      <span class="post-date">2026-03-15</span>
+      <span class="post-cat">freediving</span>
+    </li>
+
+    <li data-cat="bayesian-inference">
+      <a href="posts/another-post.html">Another interesting post title</a>
+      <span class="post-date">2026-03-15</span>
+      <span class="post-cat">bayesian-inference</span>
+    </li>
+
+    <li data-cat="diffeqs">
+      <a href="posts/third-post.html">A third post about something you care about</a>
+      <span class="post-date">2026-03-15</span>
+      <span class="post-cat">diffeqs</span>
+    </li>
+
+    <!-- Add more posts above this line -->
+
+  </ul>
+
+  <footer>Last updated: March 2026</footer>
+
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.cat-btn');
+  const posts   = document.querySelectorAll('.post-list li');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const cat = btn.dataset.cat;
+      posts.forEach(post => {
+        const show = cat === 'all' || post.dataset.cat === cat;
+        post.classList.toggle('hidden', !show);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
