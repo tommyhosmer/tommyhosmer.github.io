@@ -39,7 +39,18 @@
     .back-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; }
     .back-link:hover { text-decoration: underline; }
   </style>
+<script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+      },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
+
 <body>
 <div class="site-wrapper">
 
@@ -76,6 +87,12 @@
       Body text continues here. You can include <a href="#">links</a>,
       <code>inline code</code>, and other inline elements.
     </p>
+
+    <p>Inline math: \( E = mc^2 \)</p>
+    <p>Display math:</p>
+    $$
+    \int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+    $$
 
     <pre><code># An example code block
 def hello():
