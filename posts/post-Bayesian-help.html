@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post Title</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* Extra styles for post body content */
+    .post-header { margin-bottom: 2.5rem; }
+    .post-header h2 { font-size: 1.4rem; font-weight: 500; margin-bottom: 0.3rem; }
+    .post-header .post-date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+    .post-body { font-size: 1rem; }
+    .post-body p { margin-bottom: 1.1rem; }
+    .post-body h3 { font-size: 1.05rem; font-weight: 500; margin: 1.8rem 0 0.5rem; }
+    .post-body a { color: var(--accent); }
+    .post-body code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: #eeece6;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+    .post-body pre {
+      background: #eeece6;
+      padding: 1rem 1.2rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-bottom: 1.1rem;
+    }
+    .post-body pre code { background: none; padding: 0; }
+    .post-body blockquote {
+      border-left: 3px solid var(--border);
+      padding-left: 1rem;
+      color: var(--muted);
+      margin: 1rem 0;
+    }
+    .back-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+<script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+      },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+<div class="site-wrapper">
+
+  <header>
+    <h1><a href="../index.html">Tommy Hosmer</a></h1>
+    <nav>
+      <a href="../blog.html" class="active">Blog</a>
+      <a href="../publications.html">Publications</a>
+      <a href="../code.html">Code</a>
+      <span class="email-hint">tommy[surname]@berkeley.edu</span>
+    </nav>
+  </header>
+
+  <!-- ── Post Header ── -->
+  <div class="post-header">
+    <h2>Tips and Tricks for Bayesian Statistics</h2>
+    <div class="post-date">2026-04-01</div>
+  </div>
+
+  <!-- ── Post Body ─────────────────────────────────
+       Write your post content here using standard
+       HTML. Common elements shown below as examples.
+  ─────────────────────────────────────────────────── -->
+  <div class="post-body">
+
+    <p>
+      This will be a living document where I add the distributions, functions, and properties that I find most helpful and critical when working on problems related to
+      Bayesian statistics. Bayesian statistics is a fascinating but, in my opinion, challenging field. In terms of approach, it feels much more open-ended compared to Frequentist, making
+      it overwhelming when deciding how to start a problem. Formulations of posteriors can require some tricks and tools that are not rigorously covered in fundamental 
+      math courses (Single/Multivariable Calculus, Linear Algebra, Differential Equations). AI tools have no problem with implementation. This document will focus on the pen and paper side of problems, so 
+      that the reader may build their fundamental understanding of the field and leave the grunt work of translation to the agents.
+    </p>
+
+    <h3>Gamma Function </h3>
+    <p>
+      The Gamma function is defined as:
+      $$
+      \Gamma(n) = \int_0^\infty x^{n-1}e^{-x}\,dx
+      $$
+      For positive integers, \( \Gamma(n) = (n-1)! \) [<a href="https://en.wikipedia.org/wiki/Gamma_function">Wikipedia</a>].
+    </p>
+
+
+    <h3>logsumexp</h3>
+
+    <p>
+      Body text continues here. You can include <a href="#">links</a>,
+      <code>inline code</code>, and other inline elements.
+    </p>
+
+
+    <h3>A Section Heading</h3>
+
+    <p>
+      Body text continues here. You can include <a href="#">links</a>,
+      <code>inline code</code>, and other inline elements.
+    </p>
+
+    <p>Inline math: \( E = mc^2 \)</p>
+    <p>Display math:</p>
+    $$
+    \int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+    $$
+
+    <pre><code># An example code block
+def hello():
+    print("Hello, world!")</code></pre>
+
+    <blockquote>
+      A blockquote for notable quotes or callouts.
+    </blockquote>
+
+    <p>I hope you found this helpful. For any questions or errors please reach out at my email.</p>
+
+  </div>
+
+  <br>
+  <a class="back-link" href="../blog.html">← Back to blog</a>
+
+  <footer>Last updated: April 2026</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post Title</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* Extra styles for post body content */
+    .post-header { margin-bottom: 2.5rem; }
+    .post-header h2 { font-size: 1.4rem; font-weight: 500; margin-bottom: 0.3rem; }
+    .post-header .post-date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+    .post-body { font-size: 1rem; }
+    .post-body p { margin-bottom: 1.1rem; }
+    .post-body h3 { font-size: 1.05rem; font-weight: 500; margin: 1.8rem 0 0.5rem; }
+    .post-body a { color: var(--accent); }
+    .post-body code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: #eeece6;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+    .post-body pre {
+      background: #eeece6;
+      padding: 1rem 1.2rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-bottom: 1.1rem;
+    }
+    .post-body pre code { background: none; padding: 0; }
+    .post-body blockquote {
+      border-left: 3px solid var(--border);
+      padding-left: 1rem;
+      color: var(--muted);
+      margin: 1rem 0;
+    }
+    .back-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+<script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+      },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+<div class="site-wrapper">
+
+  <header>
+    <h1><a href="../index.html">Tommy Hosmer</a></h1>
+    <nav>
+      <a href="../blog.html" class="active">Blog</a>
+      <a href="../publications.html">Publications</a>
+      <a href="../code.html">Code</a>
+      <span class="email-hint">tommy[surname]@berkeley.edu</span>
+    </nav>
+  </header>
+
+  <!-- ── Post Header ── -->
+  <div class="post-header">
+    <h2>Explanation for the Mesh Game</h2>
+    <div class="post-date">2026-04-08</div>
+  </div>
+
+  <!-- ── Post Body ─────────────────────────────────
+       Write your post content here using standard
+       HTML. Common elements shown below as examples.
+  ─────────────────────────────────────────────────── -->
+  <div class="post-body">
+
+    <p>
+      This post explains the mesh game. More features are to come for the game. I will also add a background section for those new to the subject. For now this is an early Claude coded prototype to build intuition for how sparse matrices evolve when nodes are removed from their mesh. 
+    </p>
+    
+    <h3>Purpose of the game</h3>
+
+    <p>
+      Playing the game is supposed to help the user develop intuition between meshes and their representative connectivity matrices. In computational science, we develop algorithms (tricks) to solve \(Ax = b\) as quickly as possible. 
+      When a matrix is sparse (many of its entries are zero), then we have a basket of tricks to pull from to accelerate the solve. If possible, we would like to shrink these matrices to save on memory.
+      In the "3x3 Grid" example, if one removes node 5, the number of nonzero (nnz) values increases from 24 to 28. This is because information was flowing through 5 from nodes 2, 4, 6, and 8 to nodes 2, 4, 6, and 8. 
+      Without 5, we have to draw new connections (edges) in the mesh and update the grid so that the information may still be communicated. In a 3D or more complex setting, removals like this would be devastating for memory. 
+      However removing node 1, or any of the corner nodes for that matter, will decrease the nnz values. Information between nodes 2 and 4 flowed through 1, so, in the symmetric connectivity matrix, we dropped two edges for 1. 
+      Removals like this are beneficial.
+    </p>
+
+    <h3>Future work</h3>
+    <p>
+      The long term goal is to develop this into a game where the user strategizes to reduce nnz values. 
+    </p>
+
+  </div>
+
+  <br>
+  <a class="back-link" href="../blog.html">← Back to blog</a>
+
+  <footer>Last updated: March 2026</footer>
+
+</div>
+</body>
+</html>
