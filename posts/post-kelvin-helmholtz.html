@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kelvin-Helmholtz Instability Analysis</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* Extra styles for post body content */
+    .post-header { margin-bottom: 2.5rem; }
+    .post-header h2 { font-size: 1.4rem; font-weight: 500; margin-bottom: 0.3rem; }
+    .post-header .post-date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+    .post-body { font-size: 1rem; }
+    .post-body p { margin-bottom: 1.1rem; }
+    .post-body h3 { font-size: 1.05rem; font-weight: 500; margin: 1.8rem 0 0.5rem; }
+    .post-body a { color: var(--accent); }
+    .post-body code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: #eeece6;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+    .post-body pre {
+      background: #eeece6;
+      padding: 1rem 1.2rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-bottom: 1.1rem;
+    }
+    .post-body pre code { background: none; padding: 0; }
+    .post-body blockquote {
+      border-left: 3px solid var(--border);
+      padding-left: 1rem;
+      color: var(--muted);
+      margin: 1rem 0;
+    }
+    .back-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+
+    /* Image styling for plots */
+    .plot-image {
+      max-width: 100%;
+      height: auto;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .plot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .plot-container {
+      text-align: center;
+    }
+
+    .plot-caption {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+  </style>
+<script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+      },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+<div class="site-wrapper">
+
+  <header>
+    <h1><a href="../index.html">Tommy Hosmer</a></h1>
+    <nav>
+      <a href="../blog.html" class="active">Blog</a>
+      <a href="../publications.html">Publications</a>
+      <a href="../code.html">Code</a>
+      <span class="email-hint">tommy[surname]@berkeley.edu</span>
+    </nav>
+  </header>
+
+  <!-- ── Post Header ── -->
+  <div class="post-header">
+    <h2>Kelvin-Helmholtz Instability: Computational Analysis</h2>
+    <div class="post-date">2024-XX-XX</div>
+  </div>
+
+  <!-- ── Post Body ─────────────────────────────────
+       Write your post content here using standard
+       HTML. The images and structure are set up below.
+  ─────────────────────────────────────────────────── -->
+  <div class="post-body">
+
+    <p>
+      [Opening paragraph: Introduce the Kelvin-Helmholtz instability and its significance in fluid dynamics. Explain the computational approach used in this analysis.]
+    </p>
+
+    <h3>Problem Overview</h3>
+
+    <p>
+      [Describe the specific problem being solved, the numerical methods used, and the goals of the convergence analysis.]
+    </p>
+
+    <h3>Convergence Analysis Results</h3>
+
+    <p>
+      [Introduce the convergence study and explain what the plots below demonstrate about the numerical accuracy of the method.]
+    </p>
+
+    <div class="plot-grid">
+      <div class="plot-container">
+        <img src="images/plot1_pset2.png" alt="Convergence analysis for variable r" class="plot-image">
+        <div class="plot-caption">Figure 1: Convergence analysis for density (r)</div>
+      </div>
+
+      <div class="plot-container">
+        <img src="images/plot2_pset2.png" alt="Convergence analysis for variable ru" class="plot-image">
+        <div class="plot-caption">Figure 2: Convergence analysis for momentum (ru)</div>
+      </div>
+    </div>
+
+    <div class="plot-grid">
+      <div class="plot-container">
+        <img src="images/plot3_pset2.png" alt="Convergence analysis for variable rv" class="plot-image">
+        <div class="plot-caption">Figure 3: Convergence analysis for variable rv</div>
+      </div>
+
+      <div class="plot-container">
+        <img src="images/plot4_pset2.png" alt="Convergence analysis for variable E" class="plot-image">
+        <div class="plot-caption">Figure 4: Convergence analysis for energy (E)</div>
+      </div>
+    </div>
+
+    <p>
+      [Discuss the convergence rates observed in the plots. The slopes shown in the legends indicate the order of accuracy for each variable. Explain what the different alpha values represent and their significance.]
+    </p>
+
+    <h3>Kelvin-Helmholtz Instability Evolution</h3>
+
+    <iframe
+    width="680"
+    height="480"
+    src="https://youtube.com/shorts/Mxb01Siuuwk?feature=share"
+    title="Kelvin-Helmholtz instability evolution"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen>
+    </iframe>
+
+    <p>
+      [Describe what the animation shows: the development of the characteristic spiral vortices that form as the instability grows, and how this relates to the physical phenomenon.]
+    </p>
+
+    <h3>Key Insights</h3>
+
+    <p>
+      [Summarize the main findings from the analysis. Discuss the numerical accuracy achieved, any interesting patterns in the convergence behavior, and the physical insights gained from the simulation.]
+    </p>
+
+    <h3>Technical Implementation</h3>
+
+    <p>
+      [Optional section to discuss the computational methods, programming language used (appears to be Julia based on the .jl files), and any noteworthy implementation details.]
+    </p>
+
+    <p>
+      [Concluding thoughts and potential future work or extensions.]
+    </p>
+
+  </div>
+
+  <br>
+  <a class="back-link" href="../blog.html">← Back to blog</a>
+
+  <footer>Last updated: April 2026</footer>
+
+</div>
+</body>
+</html>
