@@ -1,0 +1,262 @@
+
+<style>
+  .panel { padding: 1rem 0; font-family: var(--font-sans); }
+  .step-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+  .pill { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--color-border-secondary); transition: background .3s; }
+  .pill.active { background: #1D9E75; }
+  .stage-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+  .stage-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .nav { display: flex; gap: 8px; margin-top: 12px; }
+  .btn { padding: 5px 16px; border-radius: 6px; border: 0.5px solid var(--color-border-primary); background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 13px; cursor: pointer; }
+  .btn:hover { background: var(--color-background-tertiary); }
+  .stat-row { display: flex; gap: 16px; margin-top: 8px; }
+  .stat { font-size: 12px; color: var(--color-text-secondary); }
+  .stat span { font-weight: 500; color: var(--color-text-primary); }
+  .legend-row { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+  .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+
+<div class="panel">
+  <div class="step-row" id="pills"></div>
+  <div id="stage-label">
+    <div class="stage-title" id="stitle"></div>
+    <div class="stage-sub" id="ssub"></div>
+  </div>
+
+  <svg width="100%" viewBox="0 0 680 340" id="mesh-svg" role="img">
+    <title>Mesh game — node elimination and fill-in</title>
+    <desc>Interactive diagram showing how removing nodes from a mesh affects the sparsity of its connectivity matrix</desc>
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+    <g id="mesh-g"></g>
+    <g id="matrix-g"></g>
+    <g id="label-g"></g>
+  </svg>
+
+  <div class="stat-row">
+    <div class="stat">Nodes: <span id="s-nodes">—</span></div>
+    <div class="stat">Edges: <span id="s-edges">—</span></div>
+    <div class="stat">NNZ (matrix): <span id="s-nnz">—</span></div>
+    <div class="stat">Reward: <span id="s-reward">—</span></div>
+  </div>
+  <div class="legend-row">
+    <div class="leg"><div class="leg-dot" style="background:#1D9E75"></div>Active node</div>
+    <div class="leg"><div class="leg-dot" style="background:#E24B4A"></div>Eliminated node</div>
+    <div class="leg"><div class="leg-dot" style="background:#EF9F27;border-radius:2px"></div>Fill-in edge (new nnz)</div>
+    <div class="leg"><div class="leg-dot" style="background:#378ADD;border-radius:2px"></div>Original edge</div>
+  </div>
+
+  <div class="nav">
+    <button class="btn" id="prev-btn">← Prev</button>
+    <button class="btn" id="next-btn">Next →</button>
+  </div>
+</div>
+
+<script>
+const MX = 340, MY = 30, MS = 24;
+
+const STAGES = [
+  {
+    title: "Initial 3×3 mesh",
+    sub: "9 nodes, 12 edges. The RL agent observes this graph and chooses which node to eliminate.",
+    nodes: [1,2,3,4,5,6,7,8,9],
+    edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
+    elim: [],
+    fillin: [],
+    reward: "—"
+  },
+  {
+    title: "Eliminate node 5 (bad move)",
+    sub: "Node 5 connects to 2,4,6,8. Removing it requires filling in all pairs — 4 new edges added. NNZ increases.",
+    nodes: [1,2,3,4,5,6,7,8,9],
+    edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
+    elim: [5],
+    fillin: [[2,4],[2,6],[2,8],[4,6],[4,8],[6,8]],
+    reward: "−4 (nnz ↑)"
+  },
+  {
+    title: "Eliminate node 1 (good move)",
+    sub: "Node 1 connects only to 2 and 4. Removing it drops 2 edges, adds 1 fill-in edge (2↔4). NNZ decreases.",
+    nodes: [1,2,3,4,5,6,7,8,9],
+    edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
+    elim: [1],
+    fillin: [[2,4]],
+    reward: "+1 (nnz ↓)"
+  },
+  {
+    title: "Agent policy: greedy corner elimination",
+    sub: "Eliminating corners sequentially minimises fill-in. Agent learns this policy on small meshes, then scales to 3D.",
+    nodes: [1,2,3,4,5,6,7,8,9],
+    edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
+    elim: [1,3,7,9],
+    fillin: [[2,4],[2,6],[4,8],[6,8]],
+    reward: "Optimal order"
+  },
+  {
+    title: "Reward signal",
+    sub: "R = nnz_before − nnz_after. Positive = good elimination. Agent maximises cumulative reward over the full sequence.",
+    nodes: [1,2,3,4,5,6,7,8,9],
+    edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
+    elim: [],
+    fillin: [],
+    reward: "R = Δ nnz"
+  }
+];
+
+const NODE_POS = {
+  1:{x:80,y:60},  2:{x:200,y:60},  3:{x:320,y:60},
+  4:{x:80,y:150}, 5:{x:200,y:150}, 6:{x:320,y:150},
+  7:{x:80,y:240}, 8:{x:200,y:240}, 9:{x:320,y:240}
+};
+
+let cur = 0;
+
+function nnzFor(stage) {
+  const alive = stage.nodes.filter(n => !stage.elim.includes(n));
+  const origEdges = stage.edges.filter(([a,b]) => !stage.elim.includes(a) && !stage.elim.includes(b));
+  return 2 * (origEdges.length + stage.fillin.length) + alive.length;
+}
+
+function render() {
+  const s = STAGES[cur];
+  document.getElementById('stitle').textContent = s.title;
+  document.getElementById('ssub').textContent = s.sub;
+  document.getElementById('s-nodes').textContent = s.nodes.length - s.elim.length;
+  const origE = s.edges.filter(([a,b]) => !s.elim.includes(a) && !s.elim.includes(b));
+  document.getElementById('s-edges').textContent = origE.length + s.fillin.length;
+  document.getElementById('s-nnz').textContent = nnzFor(s);
+  document.getElementById('s-reward').textContent = s.reward;
+
+  const mg = document.getElementById('mesh-g');
+  const lbg = document.getElementById('label-g');
+  const matg = document.getElementById('matrix-g');
+  mg.innerHTML = ''; lbg.innerHTML = ''; matg.innerHTML = '';
+
+  // Draw original edges
+  s.edges.forEach(([a,b]) => {
+    if (s.elim.includes(a) || s.elim.includes(b)) return;
+    const pa = NODE_POS[a], pb = NODE_POS[b];
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', pa.x); line.setAttribute('y1', pa.y+MY);
+    line.setAttribute('x2', pb.x); line.setAttribute('y2', pb.y+MY);
+    line.setAttribute('stroke','#378ADD'); line.setAttribute('stroke-width','1.5');
+    mg.appendChild(line);
+  });
+
+  // Draw fill-in edges
+  s.fillin.forEach(([a,b]) => {
+    const pa = NODE_POS[a], pb = NODE_POS[b];
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', pa.x); line.setAttribute('y1', pa.y+MY);
+    line.setAttribute('x2', pb.x); line.setAttribute('y2', pb.y+MY);
+    line.setAttribute('stroke','#EF9F27'); line.setAttribute('stroke-width','2');
+    line.setAttribute('stroke-dasharray','4 3');
+    mg.appendChild(line);
+  });
+
+  // Draw nodes
+  s.nodes.forEach(n => {
+    const p = NODE_POS[n];
+    const eliminated = s.elim.includes(n);
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+    if (eliminated) {
+      const line1 = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line1.setAttribute('x1', p.x-8); line1.setAttribute('y1', p.y+MY-8);
+      line1.setAttribute('x2', p.x+8); line1.setAttribute('y2', p.y+MY+8);
+      line1.setAttribute('stroke','#E24B4A'); line1.setAttribute('stroke-width','2');
+      const line2 = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line2.setAttribute('x1', p.x+8); line2.setAttribute('y1', p.y+MY-8);
+      line2.setAttribute('x2', p.x-8); line2.setAttribute('y2', p.y+MY+8);
+      line2.setAttribute('stroke','#E24B4A'); line2.setAttribute('stroke-width','2');
+      g.appendChild(line1); g.appendChild(line2);
+    } else {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circle.setAttribute('cx', p.x); circle.setAttribute('cy', p.y+MY);
+      circle.setAttribute('r', 14);
+      circle.setAttribute('fill', n===5 && cur===1 ? '#E24B4A' : '#1D9E75');
+      circle.setAttribute('fill-opacity', '0.2');
+      circle.setAttribute('stroke', n===5 && cur===1 ? '#E24B4A' : '#1D9E75');
+      circle.setAttribute('stroke-width','1.5');
+      g.appendChild(circle);
+    }
+
+    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x', p.x); txt.setAttribute('y', p.y+MY+1);
+    txt.setAttribute('text-anchor','middle'); txt.setAttribute('dominant-baseline','central');
+    txt.setAttribute('font-size','12'); txt.setAttribute('font-weight','500');
+    txt.setAttribute('fill', eliminated ? '#E24B4A' : '#1D9E75');
+    txt.textContent = n;
+    g.appendChild(txt);
+    mg.appendChild(g);
+  });
+
+  // Mesh label
+  const ml = document.createElementNS('http://www.w3.org/2000/svg','text');
+  ml.setAttribute('x','200'); ml.setAttribute('y','18');
+  ml.setAttribute('text-anchor','middle'); ml.setAttribute('font-size','12');
+  ml.setAttribute('fill','var(--color-text-secondary)');
+  ml.textContent = 'Mesh graph';
+  lbg.appendChild(ml);
+
+  // Matrix visualization (right side)
+  const alive = s.nodes.filter(n => !s.elim.includes(n));
+  const N = alive.length;
+  const matX = MX + 20, matY = 30;
+  const cellW = Math.min(20, Math.floor(270 / (N+1)));
+  const matLbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+  matLbl.setAttribute('x', matX + N*cellW/2); matLbl.setAttribute('y','18');
+  matLbl.setAttribute('text-anchor','middle'); matLbl.setAttribute('font-size','12');
+  matLbl.setAttribute('fill','var(--color-text-secondary)');
+  matLbl.textContent = 'Connectivity matrix';
+  matg.appendChild(matLbl);
+
+  const origEdgesAlive = s.edges.filter(([a,b]) => !s.elim.includes(a) && !s.elim.includes(b));
+  const allEdges = [...origEdgesAlive, ...s.fillin];
+
+  alive.forEach((n, i) => {
+    alive.forEach((m, j) => {
+      const connected = i === j || allEdges.some(([a,b]) => (a===n&&b===m)||(a===m&&b===n));
+      const isFill = s.fillin.some(([a,b]) => (a===n&&b===m)||(a===m&&b===n));
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x', matX + j*cellW);
+      rect.setAttribute('y', matY + i*cellW);
+      rect.setAttribute('width', cellW-1); rect.setAttribute('height', cellW-1);
+      rect.setAttribute('rx','1');
+      if (i === j) {
+        rect.setAttribute('fill','#378ADD'); rect.setAttribute('fill-opacity','0.5');
+      } else if (isFill) {
+        rect.setAttribute('fill','#EF9F27'); rect.setAttribute('fill-opacity','0.7');
+      } else if (connected) {
+        rect.setAttribute('fill','#378ADD'); rect.setAttribute('fill-opacity','0.35');
+      } else {
+        rect.setAttribute('fill','none');
+        rect.setAttribute('stroke','var(--color-border-tertiary)');
+        rect.setAttribute('stroke-width','0.5');
+      }
+      matg.appendChild(rect);
+    });
+  });
+
+  // Pills
+  const pc = document.getElementById('pills');
+  pc.innerHTML = '';
+  STAGES.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'pill' + (i===cur?' active':'');
+    pc.appendChild(d);
+  });
+
+  document.getElementById('prev-btn').disabled = cur === 0;
+  document.getElementById('next-btn').disabled = cur === STAGES.length-1;
+}
+
+document.getElementById('prev-btn').addEventListener('click', () => { if(cur>0){cur--;render();} });
+document.getElementById('next-btn').addEventListener('click', () => { if(cur<STAGES.length-1){cur++;render();} });
+
+render();
+</script>
