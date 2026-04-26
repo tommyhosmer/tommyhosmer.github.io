@@ -83,288 +83,295 @@
     <h3>Purpose of the game</h3>
 
     <p>
-      Playing the game is supposed to help the user develop intuition between meshes and their representative connectivity matrices. In computational science, we develop algorithms (tricks) to solve \(Ax = b\) as quickly as possible.
-      When a matrix is sparse (many of its entries are zero), then we have a basket of tricks to pull from to accelerate the solve. If possible, we would like to shrink these matrices to save on memory.
+      Playing the game is supposed to help the user develop intuition between meshes and their representative connectivity matrices. In computational science, we develop algorithms to solve \(Ax = b\) as quickly as possible. For large A matrices, we often employ iterative methods such as conjugate gradients. The number of iterations it takes the conjugate gradient method to converge to a solution is dependent on the condition number of A.
+      When a matrix is sparse (many of its entries are zero), then we have many algorithms to pull from to precondition (reduce the condition number of) matrix A and accelerate the solve. A popular choice is the Cholesky decomposition. For a matrix that is symmetric and positive definite, we can represent it as A = LL\(^T\), where L is a lower triangular matrix. Eventhough A is sparse, when decomposing it into L, entries that were zero can "fill-in" and become nonzero.
+      When storing sparse matrices, compressed sparse row (CSR) format is used to store only non-zero entries. By increasing the count of nonzero entries when forming L, the computation becomes more memory intensive and therefore slower. To get around the fill-in, some methods drop certain fill-in entries. This leads to \(\tilde{L}\), an approximation of L. We avoid the fill-in, but \(\tilde{L}\) makes for a worse preconditioner so the condition number doesn't decrease as much. 
+      Solving for L can be thought of analogously as removing nodes from the mesh. 
       In the "3x3 Grid" example, if one removes node 5, the number of nonzero (nnz) values increases from 24 to 28. This is because information was flowing through 5 from nodes 2, 4, 6, and 8 to nodes 2, 4, 6, and 8.
       Without 5, we have to draw new connections (edges) in the mesh and update the grid so that the information may still be communicated. In a 3D or more complex setting, removals like this would be devastating for memory.
       However, removing node 1, or any of the corner nodes for that matter, will decrease the nnz values. Information between nodes 2 and 4 flowed through 1, so, in the symmetric connectivity matrix, we dropped two edges for one.
-      Removing node 1 is beneficial.
+      Removing node 1 is beneficial. We are constructing a game where the player is rewarded for eliminating nodes that minimize fill-in of the final L matrix.
     </p>
 
-    <!-- Interactive Mesh Game Diagram -->
+    <h3>How Node Elimination Order Affects Sparsity in Cholesky</h3>
+
+    <p>
+      The visualization below shows different elimination orderings and their effect on the sparsity pattern of the lower triangular factor L for the Cholesky decomposition. The optimal ordering (corners first) minimizes fill-in, while poor orderings (center first) can dramatically increase the number of nonzeros. Because this is sucha a simple example, corners first and row-major ordering have the same effect on sparsity.
+    </p>
+
+    <!-- Node Elimination Ordering Visualization -->
     <style>
-      .mesh-panel {
-        padding: 1rem;
-        margin: 2rem 0;
-        border: 1px solid var(--color-border-primary, #ddd);
-        border-radius: 8px;
-        background: var(--color-background-primary, #fff);
-        font-family: var(--font-sans);
-      }
-      .mesh-panel .step-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
-      .mesh-panel .pill { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ccc; transition: background .3s; }
-      .mesh-panel .pill.active { background: #1D9E75; }
-      .mesh-panel .stage-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary, #333); }
-      .mesh-panel .stage-sub { font-size: 12px; color: var(--color-text-secondary, #666); margin-top: 2px; }
-      .mesh-panel .nav { display: flex; gap: 8px; margin-top: 12px; }
-      .mesh-panel .btn { padding: 5px 16px; border-radius: 6px; border: 0.5px solid var(--color-border-primary, #ddd); background: var(--color-background-secondary, #f5f5f5); color: var(--color-text-primary, #333); font-size: 13px; cursor: pointer; }
-      .mesh-panel .btn:hover { background: var(--color-background-tertiary, #eee); }
-      .mesh-panel .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-      .mesh-panel .stat-row { display: flex; gap: 16px; margin-top: 8px; }
-      .mesh-panel .stat { font-size: 12px; color: var(--color-text-secondary, #666); }
-      .mesh-panel .stat span { font-weight: 500; color: var(--color-text-primary, #333); }
-      .mesh-panel .legend-row { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
-      .mesh-panel .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary, #666); }
-      .mesh-panel .leg-dot { width: 10px; height: 10px; border-radius: 50%; }
+      .elimination-wrap { padding: 1rem 0; font-family: var(--font-sans); margin: 2rem 0; border: 1px solid var(--color-border-primary, #ddd); border-radius: 8px; background: var(--color-background-primary, #fff); padding: 1.5rem; }
+      .elimination-wrap .row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+      .elimination-wrap .col { flex: 1; min-width: 200px; }
+      .elimination-wrap .label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 6px; }
+      .elimination-wrap .title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+      .elimination-wrap .stat { font-size: 12px; margin-top: 6px; }
+      .elimination-wrap .stat span { font-weight: 500; }
+      .elimination-wrap .good { color: #0F6E56; }
+      .elimination-wrap .bad  { color: #993C1D; }
+      .elimination-wrap .ctrl { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+      .elimination-wrap .btn  { padding: 5px 14px; border-radius: 6px; border: 0.5px solid var(--color-border-primary); background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 12px; cursor: pointer; }
+      .elimination-wrap .btn.active { background: #E1F5EE; border-color: #0F6E56; color: #085041; }
+      .elimination-wrap .step-info { font-size: 12px; color: var(--color-text-secondary); margin-top: 8px; min-height: 32px; }
+      .elimination-wrap .legend { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+      .elimination-wrap .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+      .elimination-wrap .leg-sq { width: 10px; height: 10px; border-radius: 2px; }
     </style>
 
-    <div class="mesh-panel">
-      <div class="step-row" id="pills"></div>
-      <div id="stage-label">
-        <div class="stage-title" id="stitle"></div>
-        <div class="stage-sub" id="ssub"></div>
+    <div class="elimination-wrap">
+      <div class="ctrl" id="order-ctrl">
+        <button class="btn active" data-order="good" onclick="setOrder('good',this)">Optimal: corners first</button>
+        <button class="btn" data-order="bad" onclick="setOrder('bad',this)">Poor: center first</button>
+        <button class="btn" data-order="natural" onclick="setOrder('natural',this)">Natural: row-major</button>
       </div>
 
-      <svg width="100%" viewBox="0 0 680 340" id="mesh-svg" role="img">
-        <title>Mesh game — node elimination and fill-in</title>
-        <desc>Interactive diagram showing how removing nodes from a mesh affects the sparsity of its connectivity matrix</desc>
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </marker>
-        </defs>
-        <g id="mesh-g"></g>
-        <g id="matrix-g"></g>
-        <g id="label-g"></g>
-      </svg>
-
-      <div class="stat-row">
-        <div class="stat">Nodes: <span id="s-nodes">—</span></div>
-        <div class="stat">Edges: <span id="s-edges">—</span></div>
-        <div class="stat">NNZ (matrix): <span id="s-nnz">—</span></div>
-        <div class="stat">Reward: <span id="s-reward">—</span></div>
-      </div>
-      <div class="legend-row">
-        <div class="leg"><div class="leg-dot" style="background:#1D9E75"></div>Active node</div>
-        <div class="leg"><div class="leg-dot" style="background:#E24B4A"></div>Eliminated node</div>
-        <div class="leg"><div class="leg-dot" style="background:#EF9F27;border-radius:2px"></div>Fill-in edge (new nnz)</div>
-        <div class="leg"><div class="leg-dot" style="background:#378ADD;border-radius:2px"></div>Original edge</div>
+      <div class="row">
+        <div class="col">
+          <div class="label">3×3 mesh — elimination order</div>
+          <canvas id="mesh-canvas" width="220" height="220"></canvas>
+          <div class="step-info" id="step-info"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="btn" onclick="prevStep()">← Back</button>
+            <button class="btn" onclick="nextStep()">Next →</button>
+            <button class="btn" onclick="resetSteps()">Reset</button>
+          </div>
+        </div>
+        <div class="col">
+          <div class="label">Sparsity pattern of L (lower triangular factor)</div>
+          <canvas id="mat-canvas" width="220" height="220"></canvas>
+          <div class="stat" id="nnz-stat"></div>
+        </div>
       </div>
 
-      <div class="nav">
-        <button class="btn" id="prev-btn">← Prev</button>
-        <button class="btn" id="next-btn">Next →</button>
+      <div class="legend" style="margin-top:12px;">
+        <div class="leg"><div class="leg-sq" style="background:#1D9E75"></div>Active node</div>
+        <div class="leg"><div class="leg-sq" style="background:#E24B4A"></div>Just eliminated</div>
+        <div class="leg"><div class="leg-sq" style="background:#888780"></div>Already eliminated</div>
+        <div class="leg"><div class="leg-sq" style="background:#EF9F27"></div>Fill-in edge added</div>
+        <div class="leg"><div class="leg-sq" style="background:#378ADD"></div>Original edge</div>
+        <div class="leg"><div class="leg-sq" style="background:#1D9E75;opacity:0.35"></div>L nonzero (original)</div>
+        <div class="leg"><div class="leg-sq" style="background:#EF9F27;opacity:0.8"></div>L nonzero (fill-in)</div>
       </div>
     </div>
 
     <script>
-    const MX = 340, MY = 30, MS = 24;
+    const N = 3;
+    const NODE_POS_ELIM = {};
+    const PAD = 30, SPACING = 70;
+    for(let i=0;i<N;i++) for(let j=0;j<N;j++) {
+      const idx = i*N+j;
+      NODE_POS_ELIM[idx] = {x: PAD + j*SPACING, y: PAD + i*SPACING};
+    }
 
-    const STAGES = [
-      {
-        title: "Initial 3×3 mesh",
-        sub: "9 nodes, 12 edges. The RL agent observes this graph and chooses which node to eliminate.",
-        nodes: [1,2,3,4,5,6,7,8,9],
-        edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
-        elim: [],
-        fillin: [],
-        reward: "—"
-      },
-      {
-        title: "Eliminate node 5 (bad move)",
-        sub: "Node 5 connects to 2,4,6,8. Removing it requires filling in all pairs — 4 new edges added. NNZ increases.",
-        nodes: [1,2,3,4,5,6,7,8,9],
-        edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
-        elim: [5],
-        fillin: [[2,4],[2,6],[2,8],[4,6],[4,8],[6,8]],
-        reward: "−4 (nnz ↑)"
-      },
-      {
-        title: "Eliminate node 1 (good move)",
-        sub: "Node 1 connects only to 2 and 4. Removing it drops 2 edges, adds 1 fill-in edge (2↔4). NNZ decreases.",
-        nodes: [1,2,3,4,5,6,7,8,9],
-        edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
-        elim: [1],
-        fillin: [[2,4]],
-        reward: "+1 (nnz ↓)"
-      },
-      {
-        title: "Agent policy: greedy corner elimination",
-        sub: "Eliminating corners sequentially minimises fill-in. Agent learns this policy on small meshes, then scales to 3D.",
-        nodes: [1,2,3,4,5,6,7,8,9],
-        edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
-        elim: [1,3,7,9],
-        fillin: [[2,4],[2,6],[4,8],[6,8]],
-        reward: "Optimal order"
-      },
-      {
-        title: "Reward signal",
-        sub: "R = nnz_before − nnz_after. Positive = good elimination. Agent maximises cumulative reward over the full sequence.",
-        nodes: [1,2,3,4,5,6,7,8,9],
-        edges: [[1,2],[2,3],[4,5],[5,6],[7,8],[8,9],[1,4],[4,7],[2,5],[5,8],[3,6],[6,9]],
-        elim: [],
-        fillin: [],
-        reward: "R = Δ nnz"
-      }
-    ];
-
-    const NODE_POS = {
-      1:{x:80,y:60},  2:{x:200,y:60},  3:{x:320,y:60},
-      4:{x:80,y:150}, 5:{x:200,y:150}, 6:{x:320,y:150},
-      7:{x:80,y:240}, 8:{x:200,y:240}, 9:{x:320,y:240}
+    const ORDERS = {
+      good:    [0,2,6,8,1,3,5,7,4],
+      bad:     [4,0,2,6,8,1,3,5,7],
+      natural: [0,1,2,3,4,5,6,7,8]
     };
 
-    let cur = 0;
-
-    function nnzFor(stage) {
-      const alive = stage.nodes.filter(n => !stage.elim.includes(n));
-      const origEdges = stage.edges.filter(([a,b]) => !stage.elim.includes(a) && !stage.elim.includes(b));
-      return 2 * (origEdges.length + stage.fillin.length) + alive.length;
+    const ORIG_EDGES = [];
+    for(let i=0;i<N;i++) for(let j=0;j<N;j++) {
+      const k=i*N+j;
+      if(j<N-1) ORIG_EDGES.push([k,k+1]);
+      if(i<N-1) ORIG_EDGES.push([k,k+N]);
     }
 
-    function render() {
-      const s = STAGES[cur];
-      document.getElementById('stitle').textContent = s.title;
-      document.getElementById('ssub').textContent = s.sub;
-      document.getElementById('s-nodes').textContent = s.nodes.length - s.elim.length;
-      const origE = s.edges.filter(([a,b]) => !s.elim.includes(a) && !s.elim.includes(b));
-      document.getElementById('s-edges').textContent = origE.length + s.fillin.length;
-      document.getElementById('s-nnz').textContent = nnzFor(s);
-      document.getElementById('s-reward').textContent = s.reward;
+    let currentOrder = 'good';
+    let step = 0;
+    let fillinEdges = [];
+    let eliminated = [];
+    let activeEdges = [...ORIG_EDGES.map(e=>[...e])];
 
-      const mg = document.getElementById('mesh-g');
-      const lbg = document.getElementById('label-g');
-      const matg = document.getElementById('matrix-g');
-      mg.innerHTML = ''; lbg.innerHTML = ''; matg.innerHTML = '';
+    function setOrder(o, btn) {
+      currentOrder = o;
+      document.querySelectorAll('.btn[data-order]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      resetSteps();
+    }
 
-      // Draw original edges
-      s.edges.forEach(([a,b]) => {
-        if (s.elim.includes(a) || s.elim.includes(b)) return;
-        const pa = NODE_POS[a], pb = NODE_POS[b];
-        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-        line.setAttribute('x1', pa.x); line.setAttribute('y1', pa.y+MY);
-        line.setAttribute('x2', pb.x); line.setAttribute('y2', pb.y+MY);
-        line.setAttribute('stroke','#378ADD'); line.setAttribute('stroke-width','1.5');
-        mg.appendChild(line);
-      });
+    function resetSteps() {
+      step = 0;
+      fillinEdges = [];
+      eliminated = [];
+      activeEdges = [...ORIG_EDGES.map(e=>[...e])];
+      draw();
+    }
 
-      // Draw fill-in edges
-      s.fillin.forEach(([a,b]) => {
-        const pa = NODE_POS[a], pb = NODE_POS[b];
-        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-        line.setAttribute('x1', pa.x); line.setAttribute('y1', pa.y+MY);
-        line.setAttribute('x2', pb.x); line.setAttribute('y2', pb.y+MY);
-        line.setAttribute('stroke','#EF9F27'); line.setAttribute('stroke-width','2');
-        line.setAttribute('stroke-dasharray','4 3');
-        mg.appendChild(line);
-      });
+    function nextStep() {
+      const order = ORDERS[currentOrder];
+      if(step >= order.length) return;
+      const node = order[step];
+      eliminated.push(node);
+      const neighbors = getActiveNeighbors(node, activeEdges, eliminated);
+      for(let i=0;i<neighbors.length;i++) for(let j=i+1;j<neighbors.length;j++) {
+        const a=neighbors[i], b=neighbors[j];
+        const exists = activeEdges.some(e=>(e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a));
+        if(!exists) fillinEdges.push([a,b]);
+      }
+      activeEdges = activeEdges.filter(e=>e[0]!==node&&e[1]!==node);
+      step++;
+      draw();
+    }
 
-      // Draw nodes
-      s.nodes.forEach(n => {
-        const p = NODE_POS[n];
-        const eliminated = s.elim.includes(n);
-        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-
-        if (eliminated) {
-          const line1 = document.createElementNS('http://www.w3.org/2000/svg','line');
-          line1.setAttribute('x1', p.x-8); line1.setAttribute('y1', p.y+MY-8);
-          line1.setAttribute('x2', p.x+8); line1.setAttribute('y2', p.y+MY+8);
-          line1.setAttribute('stroke','#E24B4A'); line1.setAttribute('stroke-width','2');
-          const line2 = document.createElementNS('http://www.w3.org/2000/svg','line');
-          line2.setAttribute('x1', p.x+8); line2.setAttribute('y1', p.y+MY-8);
-          line2.setAttribute('x2', p.x-8); line2.setAttribute('y2', p.y+MY+8);
-          line2.setAttribute('stroke','#E24B4A'); line2.setAttribute('stroke-width','2');
-          g.appendChild(line1); g.appendChild(line2);
-        } else {
-          const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-          circle.setAttribute('cx', p.x); circle.setAttribute('cy', p.y+MY);
-          circle.setAttribute('r', 14);
-          circle.setAttribute('fill', n===5 && cur===1 ? '#E24B4A' : '#1D9E75');
-          circle.setAttribute('fill-opacity', '0.2');
-          circle.setAttribute('stroke', n===5 && cur===1 ? '#E24B4A' : '#1D9E75');
-          circle.setAttribute('stroke-width','1.5');
-          g.appendChild(circle);
+    function prevStep() {
+      if(step === 0) return;
+      resetSteps();
+      const target = step - 1;
+      step = 0;
+      fillinEdges = [];
+      eliminated = [];
+      activeEdges = [...ORIG_EDGES.map(e=>[...e])];
+      for(let s=0;s<target;s++) {
+        const node = ORDERS[currentOrder][s];
+        eliminated.push(node);
+        const neighbors = getActiveNeighbors(node, activeEdges, eliminated);
+        for(let i=0;i<neighbors.length;i++) for(let j=i+1;j<neighbors.length;j++) {
+          const a=neighbors[i], b=neighbors[j];
+          const exists = activeEdges.some(e=>(e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a));
+          if(!exists) fillinEdges.push([a,b]);
         }
-
-        const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
-        txt.setAttribute('x', p.x); txt.setAttribute('y', p.y+MY+1);
-        txt.setAttribute('text-anchor','middle'); txt.setAttribute('dominant-baseline','central');
-        txt.setAttribute('font-size','12'); txt.setAttribute('font-weight','500');
-        txt.setAttribute('fill', eliminated ? '#E24B4A' : '#1D9E75');
-        txt.textContent = n;
-        g.appendChild(txt);
-        mg.appendChild(g);
-      });
-
-      // Mesh label
-      const ml = document.createElementNS('http://www.w3.org/2000/svg','text');
-      ml.setAttribute('x','200'); ml.setAttribute('y','18');
-      ml.setAttribute('text-anchor','middle'); ml.setAttribute('font-size','12');
-      ml.setAttribute('fill','#666');
-      ml.textContent = 'Mesh graph';
-      lbg.appendChild(ml);
-
-      // Matrix visualization (right side)
-      const alive = s.nodes.filter(n => !s.elim.includes(n));
-      const N = alive.length;
-      const matX = MX + 20, matY = 30;
-      const cellW = Math.min(20, Math.floor(270 / (N+1)));
-      const matLbl = document.createElementNS('http://www.w3.org/2000/svg','text');
-      matLbl.setAttribute('x', matX + N*cellW/2); matLbl.setAttribute('y','18');
-      matLbl.setAttribute('text-anchor','middle'); matLbl.setAttribute('font-size','12');
-      matLbl.setAttribute('fill','#666');
-      matLbl.textContent = 'Connectivity matrix';
-      matg.appendChild(matLbl);
-
-      const origEdgesAlive = s.edges.filter(([a,b]) => !s.elim.includes(a) && !s.elim.includes(b));
-      const allEdges = [...origEdgesAlive, ...s.fillin];
-
-      alive.forEach((n, i) => {
-        alive.forEach((m, j) => {
-          const connected = i === j || allEdges.some(([a,b]) => (a===n&&b===m)||(a===m&&b===n));
-          const isFill = s.fillin.some(([a,b]) => (a===n&&b===m)||(a===m&&b===n));
-          const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-          rect.setAttribute('x', matX + j*cellW);
-          rect.setAttribute('y', matY + i*cellW);
-          rect.setAttribute('width', cellW-1); rect.setAttribute('height', cellW-1);
-          rect.setAttribute('rx','1');
-          if (i === j) {
-            rect.setAttribute('fill','#378ADD'); rect.setAttribute('fill-opacity','0.5');
-          } else if (isFill) {
-            rect.setAttribute('fill','#EF9F27'); rect.setAttribute('fill-opacity','0.7');
-          } else if (connected) {
-            rect.setAttribute('fill','#378ADD'); rect.setAttribute('fill-opacity','0.35');
-          } else {
-            rect.setAttribute('fill','none');
-            rect.setAttribute('stroke','#ddd');
-            rect.setAttribute('stroke-width','0.5');
-          }
-          matg.appendChild(rect);
-        });
-      });
-
-      // Pills
-      const pc = document.getElementById('pills');
-      pc.innerHTML = '';
-      STAGES.forEach((_,i) => {
-        const d = document.createElement('div');
-        d.className = 'pill' + (i===cur?' active':'');
-        pc.appendChild(d);
-      });
-
-      document.getElementById('prev-btn').disabled = cur === 0;
-      document.getElementById('next-btn').disabled = cur === STAGES.length-1;
+        activeEdges = activeEdges.filter(e=>e[0]!==node&&e[1]!==node);
+        step++;
+      }
+      draw();
     }
 
-    document.getElementById('prev-btn').addEventListener('click', () => { if(cur>0){cur--;render();} });
-    document.getElementById('next-btn').addEventListener('click', () => { if(cur<STAGES.length-1){cur++;render();} });
+    function getActiveNeighbors(node, edges, elim) {
+      const nbrs = new Set();
+      edges.forEach(([a,b])=>{
+        if(a===node && !elim.includes(b)) nbrs.add(b);
+        if(b===node && !elim.includes(a)) nbrs.add(a);
+      });
+      return [...nbrs];
+    }
 
-    render();
+    function draw() {
+      drawMesh();
+      drawMatrix();
+    }
+
+    function drawMesh() {
+      const canvas = document.getElementById('mesh-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,220,220);
+      const order = ORDERS[currentOrder];
+      const currentNode = step < order.length ? order[step] : null;
+
+      fillinEdges.forEach(([a,b])=>{
+        if(eliminated.includes(a)||eliminated.includes(b)) return;
+        const pa=NODE_POS_ELIM[a], pb=NODE_POS_ELIM[b];
+        ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y);
+        ctx.strokeStyle='#EF9F27'; ctx.lineWidth=2;
+        ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+      });
+
+      ORIG_EDGES.forEach(([a,b])=>{
+        if(eliminated.includes(a)||eliminated.includes(b)) return;
+        const pa=NODE_POS_ELIM[a], pb=NODE_POS_ELIM[b];
+        ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y);
+        ctx.strokeStyle='#378ADD'; ctx.lineWidth=1.5; ctx.stroke();
+      });
+
+      for(let i=0;i<9;i++) {
+        const p=NODE_POS_ELIM[i];
+        ctx.beginPath(); ctx.arc(p.x,p.y,13,0,2*Math.PI);
+        if(eliminated.includes(i)) {
+          ctx.fillStyle='#888780';
+        } else if(i===currentNode) {
+          ctx.fillStyle='#E24B4A';
+        } else {
+          ctx.fillStyle='#1D9E75';
+        }
+        ctx.fill();
+        ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=1; ctx.stroke();
+        ctx.fillStyle='white'; ctx.font='bold 11px sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(i+1, p.x, p.y);
+      }
+
+      const orderLabels = ['A','B','C','D','E','F','G','H','I'];
+      order.forEach((node,idx)=>{
+        if(idx < step) {
+          const p=NODE_POS_ELIM[node];
+          ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='9px sans-serif';
+          ctx.fillText(orderLabels[idx], p.x+10, p.y-10);
+        }
+      });
+
+      const info = document.getElementById('step-info');
+      if(step === 0) {
+        info.textContent = 'Press Next to start eliminating nodes.';
+      } else if(step <= order.length) {
+        const prev = order[step-1];
+        const justFill = fillinEdges.length;
+        const names = ['top-left','top-mid','top-right','mid-left','center','mid-right','bot-left','bot-mid','bot-right'];
+        info.textContent = `Step ${step}: eliminated node ${prev+1} (${names[prev]}). Total fill-in edges: ${justFill}.`;
+      }
+    }
+
+    function drawMatrix() {
+      const canvas = document.getElementById('mat-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,220,220);
+      const order = ORDERS[currentOrder];
+      const perm = [];
+      for(let i=0;i<9;i++) perm[order[i]] = i;
+
+      const cellW = Math.floor(200/9);
+      const offX=5, offY=5;
+
+      const origPairs = new Set();
+      ORIG_EDGES.forEach(([a,b])=>{
+        const ra=perm[a], rb=perm[b];
+        const lo=Math.min(ra,rb), hi=Math.max(ra,rb);
+        origPairs.add(`${hi},${lo}`);
+      });
+
+      const fillPairs = new Set();
+      fillinEdges.forEach(([a,b])=>{
+        const ra=perm[a], rb=perm[b];
+        const lo=Math.min(ra,rb), hi=Math.max(ra,rb);
+        fillPairs.add(`${hi},${lo}`);
+      });
+
+      for(let row=0;row<9;row++) {
+        for(let col=0;col<=row;col++) {
+          const x = offX + col*cellW;
+          const y = offY + row*cellW;
+          const key = `${row},${col}`;
+          if(row===col) {
+            ctx.fillStyle='#378ADD'; ctx.globalAlpha=0.6;
+          } else if(fillPairs.has(key)) {
+            ctx.fillStyle='#EF9F27'; ctx.globalAlpha=0.85;
+          } else if(origPairs.has(key)) {
+            ctx.fillStyle='#1D9E75'; ctx.globalAlpha=0.35;
+          } else {
+            ctx.fillStyle='transparent'; ctx.globalAlpha=0;
+          }
+          if(ctx.globalAlpha > 0) {
+            ctx.fillRect(x, y, cellW-1, cellW-1);
+          }
+          ctx.globalAlpha=1;
+          ctx.strokeStyle='var(--color-border-tertiary)'; ctx.lineWidth=0.5;
+          ctx.strokeRect(x, y, cellW-1, cellW-1);
+        }
+      }
+
+      const nnzOrig = 9 + origPairs.size;
+      const nnzFill = fillPairs.size;
+      const total = nnzOrig + nnzFill;
+      const stat = document.getElementById('nnz-stat');
+      const pct = nnzFill > 0 ? `<span class="bad">+${nnzFill} fill-in (+${Math.round(100*nnzFill/nnzOrig)}%)</span>` : `<span class="good">no fill-in yet</span>`;
+      stat.innerHTML = `NNZ in L: <span>${total}</span> (diagonal ${9} + original ${origPairs.size} + fill-in ${nnzFill}) ${pct}`;
+    }
+
+    draw();
     </script>
 
     <h3>Future work</h3>
     <p>
-      The long term goal is to develop this into a game where the user strategizes to reduce nnz values. 
+      The long term goal is to develop this into a game where the user strategizes to reduce nnz values. Once the game is finished and the reward function is determined, we wish to use it as a test environment for training an RL agent that can remove nodes in an order that reduces fill in of the L matrix and ultimately accelerate the full solve of Ax=b.  
     </p>
 
   </div>

@@ -1,0 +1,269 @@
+
+<style>
+  .wrap { padding: 1rem 0; font-family: var(--font-sans); }
+  .row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 200px; }
+  .label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 6px; }
+  .title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+  .stat { font-size: 12px; margin-top: 6px; }
+  .stat span { font-weight: 500; }
+  .good { color: #0F6E56; }
+  .bad  { color: #993C1D; }
+  .ctrl { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .btn  { padding: 5px 14px; border-radius: 6px; border: 0.5px solid var(--color-border-primary); background: var(--color-background-secondary); color: var(--color-text-primary); font-size: 12px; cursor: pointer; }
+  .btn.active { background: #E1F5EE; border-color: #0F6E56; color: #085041; }
+  .step-info { font-size: 12px; color: var(--color-text-secondary); margin-top: 8px; min-height: 32px; }
+  .legend { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+  .leg-sq { width: 10px; height: 10px; border-radius: 2px; }
+</style>
+
+<div class="wrap">
+  <div class="ctrl" id="order-ctrl">
+    <button class="btn active" data-order="good" onclick="setOrder('good',this)">Optimal: corners first</button>
+    <button class="btn" data-order="bad" onclick="setOrder('bad',this)">Poor: center first</button>
+    <button class="btn" data-order="natural" onclick="setOrder('natural',this)">Natural: row-major</button>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div class="label">3×3 mesh — elimination order</div>
+      <canvas id="mesh-canvas" width="220" height="220"></canvas>
+      <div class="step-info" id="step-info"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn" onclick="prevStep()">← Back</button>
+        <button class="btn" onclick="nextStep()">Next →</button>
+        <button class="btn" onclick="resetSteps()">Reset</button>
+      </div>
+    </div>
+    <div class="col">
+      <div class="label">Sparsity pattern of L (lower triangular factor)</div>
+      <canvas id="mat-canvas" width="220" height="220"></canvas>
+      <div class="stat" id="nnz-stat"></div>
+    </div>
+  </div>
+
+  <div class="legend" style="margin-top:12px;">
+    <div class="leg"><div class="leg-sq" style="background:#1D9E75"></div>Active node</div>
+    <div class="leg"><div class="leg-sq" style="background:#E24B4A"></div>Just eliminated</div>
+    <div class="leg"><div class="leg-sq" style="background:#888780"></div>Already eliminated</div>
+    <div class="leg"><div class="leg-sq" style="background:#EF9F27"></div>Fill-in edge added</div>
+    <div class="leg"><div class="leg-sq" style="background:#378ADD"></div>Original edge</div>
+    <div class="leg"><div class="leg-sq" style="background:#1D9E75;opacity:0.35"></div>L nonzero (original)</div>
+    <div class="leg"><div class="leg-sq" style="background:#EF9F27;opacity:0.8"></div>L nonzero (fill-in)</div>
+  </div>
+</div>
+
+<script>
+const N = 3;
+const NODE_POS = {};
+const PAD = 30, SPACING = 70;
+for(let i=0;i<N;i++) for(let j=0;j<N;j++) {
+  const idx = i*N+j;
+  NODE_POS[idx] = {x: PAD + j*SPACING, y: PAD + i*SPACING};
+}
+
+const ORDERS = {
+  good:    [0,2,6,8,1,3,5,7,4],
+  bad:     [4,0,2,6,8,1,3,5,7],
+  natural: [0,1,2,3,4,5,6,7,8]
+};
+
+const ORIG_EDGES = [];
+for(let i=0;i<N;i++) for(let j=0;j<N;j++) {
+  const k=i*N+j;
+  if(j<N-1) ORIG_EDGES.push([k,k+1]);
+  if(i<N-1) ORIG_EDGES.push([k,k+N]);
+}
+
+let currentOrder = 'good';
+let step = 0;
+let fillinEdges = [];
+let eliminated = [];
+let activeEdges = [...ORIG_EDGES.map(e=>[...e])];
+
+function setOrder(o, btn) {
+  currentOrder = o;
+  document.querySelectorAll('.btn[data-order]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  resetSteps();
+}
+
+function resetSteps() {
+  step = 0;
+  fillinEdges = [];
+  eliminated = [];
+  activeEdges = [...ORIG_EDGES.map(e=>[...e])];
+  draw();
+}
+
+function nextStep() {
+  const order = ORDERS[currentOrder];
+  if(step >= order.length) return;
+  const node = order[step];
+  eliminated.push(node);
+  const neighbors = getActiveNeighbors(node, activeEdges, eliminated);
+  for(let i=0;i<neighbors.length;i++) for(let j=i+1;j<neighbors.length;j++) {
+    const a=neighbors[i], b=neighbors[j];
+    const exists = activeEdges.some(e=>(e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a));
+    if(!exists) fillinEdges.push([a,b]);
+  }
+  activeEdges = activeEdges.filter(e=>e[0]!==node&&e[1]!==node);
+  step++;
+  draw();
+}
+
+function prevStep() {
+  if(step === 0) return;
+  resetSteps();
+  const target = step - 1;
+  step = 0;
+  fillinEdges = [];
+  eliminated = [];
+  activeEdges = [...ORIG_EDGES.map(e=>[...e])];
+  for(let s=0;s<target;s++) {
+    const node = ORDERS[currentOrder][s];
+    eliminated.push(node);
+    const neighbors = getActiveNeighbors(node, activeEdges, eliminated);
+    for(let i=0;i<neighbors.length;i++) for(let j=i+1;j<neighbors.length;j++) {
+      const a=neighbors[i], b=neighbors[j];
+      const exists = activeEdges.some(e=>(e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a));
+      if(!exists) fillinEdges.push([a,b]);
+    }
+    activeEdges = activeEdges.filter(e=>e[0]!==node&&e[1]!==node);
+    step++;
+  }
+  draw();
+}
+
+function getActiveNeighbors(node, edges, elim) {
+  const nbrs = new Set();
+  edges.forEach(([a,b])=>{
+    if(a===node && !elim.includes(b)) nbrs.add(b);
+    if(b===node && !elim.includes(a)) nbrs.add(a);
+  });
+  return [...nbrs];
+}
+
+function draw() {
+  drawMesh();
+  drawMatrix();
+}
+
+function drawMesh() {
+  const canvas = document.getElementById('mesh-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,220,220);
+  const order = ORDERS[currentOrder];
+  const currentNode = step < order.length ? order[step] : null;
+
+  fillinEdges.forEach(([a,b])=>{
+    if(eliminated.includes(a)||eliminated.includes(b)) return;
+    const pa=NODE_POS[a], pb=NODE_POS[b];
+    ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y);
+    ctx.strokeStyle='#EF9F27'; ctx.lineWidth=2;
+    ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+  });
+
+  ORIG_EDGES.forEach(([a,b])=>{
+    if(eliminated.includes(a)||eliminated.includes(b)) return;
+    const pa=NODE_POS[a], pb=NODE_POS[b];
+    ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y);
+    ctx.strokeStyle='#378ADD'; ctx.lineWidth=1.5; ctx.stroke();
+  });
+
+  for(let i=0;i<9;i++) {
+    const p=NODE_POS[i];
+    ctx.beginPath(); ctx.arc(p.x,p.y,13,0,2*Math.PI);
+    if(eliminated.includes(i)) {
+      ctx.fillStyle='#888780';
+    } else if(i===currentNode) {
+      ctx.fillStyle='#E24B4A';
+    } else {
+      ctx.fillStyle='#1D9E75';
+    }
+    ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle='white'; ctx.font='bold 11px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(i+1, p.x, p.y);
+  }
+
+  const orderLabels = ['A','B','C','D','E','F','G','H','I'];
+  order.forEach((node,idx)=>{
+    if(idx < step) {
+      const p=NODE_POS[node];
+      ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='9px sans-serif';
+      ctx.fillText(orderLabels[idx], p.x+10, p.y-10);
+    }
+  });
+
+  const info = document.getElementById('step-info');
+  if(step === 0) {
+    info.textContent = 'Press Next to start eliminating nodes.';
+  } else if(step <= order.length) {
+    const prev = order[step-1];
+    const justFill = fillinEdges.length;
+    const names = ['top-left','top-mid','top-right','mid-left','center','mid-right','bot-left','bot-mid','bot-right'];
+    info.textContent = `Step ${step}: eliminated node ${prev+1} (${names[prev]}). Total fill-in edges: ${justFill}.`;
+  }
+}
+
+function drawMatrix() {
+  const canvas = document.getElementById('mat-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,220,220);
+  const order = ORDERS[currentOrder];
+  const perm = [];
+  for(let i=0;i<9;i++) perm[order[i]] = i;
+
+  const cellW = Math.floor(200/9);
+  const offX=5, offY=5;
+
+  const origPairs = new Set();
+  ORIG_EDGES.forEach(([a,b])=>{
+    const ra=perm[a], rb=perm[b];
+    const lo=Math.min(ra,rb), hi=Math.max(ra,rb);
+    origPairs.add(`${hi},${lo}`);
+  });
+
+  const fillPairs = new Set();
+  fillinEdges.forEach(([a,b])=>{
+    const ra=perm[a], rb=perm[b];
+    const lo=Math.min(ra,rb), hi=Math.max(ra,rb);
+    fillPairs.add(`${hi},${lo}`);
+  });
+
+  for(let row=0;row<9;row++) {
+    for(let col=0;col<=row;col++) {
+      const x = offX + col*cellW;
+      const y = offY + row*cellW;
+      const key = `${row},${col}`;
+      if(row===col) {
+        ctx.fillStyle='#378ADD'; ctx.globalAlpha=0.6;
+      } else if(fillPairs.has(key)) {
+        ctx.fillStyle='#EF9F27'; ctx.globalAlpha=0.85;
+      } else if(origPairs.has(key)) {
+        ctx.fillStyle='#1D9E75'; ctx.globalAlpha=0.35;
+      } else {
+        ctx.fillStyle='transparent'; ctx.globalAlpha=0;
+      }
+      if(ctx.globalAlpha > 0) {
+        ctx.fillRect(x, y, cellW-1, cellW-1);
+      }
+      ctx.globalAlpha=1;
+      ctx.strokeStyle='var(--color-border-tertiary)'; ctx.lineWidth=0.5;
+      ctx.strokeRect(x, y, cellW-1, cellW-1);
+    }
+  }
+
+  const nnzOrig = 9 + origPairs.size;
+  const nnzFill = fillPairs.size;
+  const total = nnzOrig + nnzFill;
+  const stat = document.getElementById('nnz-stat');
+  const pct = nnzFill > 0 ? `<span class="bad">+${nnzFill} fill-in (+${Math.round(100*nnzFill/nnzOrig)}%)</span>` : `<span class="good">no fill-in yet</span>`;
+  stat.innerHTML = `NNZ in L: <span>${total}</span> (diagonal ${9} + original ${origPairs.size} + fill-in ${nnzFill}) ${pct}`;
+}
+
+draw();
+</script>
