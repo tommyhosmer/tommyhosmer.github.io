@@ -83,10 +83,10 @@
     <h3>Purpose of the game</h3>
 
     <p>
-      Playing the game is supposed to help the user develop intuition between meshes and their representative connectivity matrices. In computational science, we develop algorithms to solve \(Ax = b\) as quickly as possible. For large A matrices, we often employ iterative methods such as conjugate gradients. The number of iterations it takes the conjugate gradient method to converge to a solution is dependent on the condition number of A.
-      When a matrix is sparse (many of its entries are zero), then we have many algorithms to pull from to precondition (reduce the condition number of) matrix A and accelerate the solve. A popular choice is the Cholesky decomposition. For a matrix that is symmetric and positive definite, we can represent it as A = LL\(^T\), where L is a lower triangular matrix. Eventhough A is sparse, when decomposing it into L, entries that were zero can "fill-in" and become nonzero.
-      When storing sparse matrices, compressed sparse row (CSR) format is used to store only non-zero entries. By increasing the count of nonzero entries when forming L, the computation becomes more memory intensive and therefore slower. To get around the fill-in, some methods drop certain fill-in entries. This leads to \(\tilde{L}\), an approximation of L. We avoid the fill-in, but \(\tilde{L}\) makes for a worse preconditioner so the condition number doesn't decrease as much. 
-      Solving for L can be thought of analogously as removing nodes from the mesh. 
+      Playing the game is supposed to help the user develop intuition between meshes and their representative connectivity matrices. In computational science, we develop algorithms to solve \(Ax = b\) as quickly as possible. For large A matrices, we often employ iterative methods such as conjugate gradients. The number of iterations it takes the conjugate gradient method to converge to a solution is dependent on the condition number of \(A\).
+      When a matrix is sparse (many of its entries are zero), then we have many algorithms to pull from to precondition (reduce the condition number of) matrix \(A\) and accelerate the solve. A popular choice is the Cholesky decomposition. For a matrix that is symmetric and positive definite, we can represent it as \(A = LL^T\), where \(L\) is a lower triangular matrix. Eventhough \(A\) is sparse, when decomposing it into \(L\), entries that were zero can "fill-in" and become nonzero.
+      When storing sparse matrices, compressed sparse row (CSR) format is used to store only non-zero entries. By increasing the count of nonzero entries when forming \(L\), the computation becomes more memory intensive and therefore slower. To get around the fill-in, some methods drop certain fill-in entries. This leads to \(\tilde{L}\), an approximation of \(L\). We avoid the fill-in, but \(\tilde{L}\) makes for a worse preconditioner so the condition number doesn't decrease as much. 
+      Solving for \(L\) can be thought of analogously as removing nodes from the mesh. 
       In the "3x3 Grid" example, if one removes node 5, the number of nonzero (nnz) values increases from 24 to 28. This is because information was flowing through 5 from nodes 2, 4, 6, and 8 to nodes 2, 4, 6, and 8.
       Without 5, we have to draw new connections (edges) in the mesh and update the grid so that the information may still be communicated. In a 3D or more complex setting, removals like this would be devastating for memory.
       However, removing node 1, or any of the corner nodes for that matter, will decrease the nnz values. Information between nodes 2 and 4 flowed through 1, so, in the symmetric connectivity matrix, we dropped two edges for one.
@@ -96,7 +96,7 @@
     <h3>How Node Elimination Order Affects Sparsity in Cholesky</h3>
 
     <p>
-      The visualization below shows different elimination orderings and their effect on the sparsity pattern of the lower triangular factor L for the Cholesky decomposition. The optimal ordering (corners first) minimizes fill-in, while poor orderings (center first) can dramatically increase the number of nonzeros. Because this is such a simple example, corners first and row-major ordering have the same effect on sparsity.
+      The visualization below shows different elimination orderings and their effect on the sparsity pattern of the lower triangular factor \(L\) for the Cholesky decomposition. The optimal ordering (corners first) minimizes fill-in, while poor orderings (center first) can dramatically increase the number of nonzeros. Because this is such a simple example, corners first and row-major ordering have the same effect on sparsity.
     </p>
 
     <!-- Node Elimination Ordering Visualization -->
@@ -371,7 +371,7 @@
 
     <h3>Future work</h3>
     <p>
-      The long term goal is to develop this into a game where the user strategizes to reduce nnz values. Once the game is finished and the reward function is determined, we wish to use it as a test environment for training an RL agent that can remove nodes in an order that reduces fill in of the L matrix and ultimately accelerate the full solve of Ax=b.  
+      The long term goal is to develop this into a game where the user strategizes to reduce nnz values. Once the game is finished and the reward function is determined, we wish to use it as a test environment for training an RL agent that can remove nodes in an order that reduces fill in of the L matrix and ultimately accelerate the full solve of \(Ax = b\).  
     </p>
 
   </div>
