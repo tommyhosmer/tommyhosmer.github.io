@@ -90,7 +90,7 @@
       In the "3x3 Grid" example, if one removes node 5, the number of nonzero (nnz) values increases from 24 to 28. This is because information was flowing through 5 from nodes 2, 4, 6, and 8 to nodes 2, 4, 6, and 8.
       Without 5, we have to draw new connections (edges) in the mesh and update the grid so that the information may still be communicated. In a 3D or more complex setting, removals like this would be devastating for memory.
       However, removing node 1, or any of the corner nodes for that matter, will decrease the nnz values. Information between nodes 2 and 4 flowed through 1, so, in the symmetric connectivity matrix, we dropped two edges for one.
-      Removing node 1 is beneficial. We are constructing a game where the player is rewarded for eliminating nodes that minimize fill-in of the final L matrix.
+      Removing node 1 is beneficial. We are constructing a game where the player is rewarded for eliminating nodes that minimize fill-in of the final \(L\) matrix.
     </p>
 
     <h3>How Node Elimination Order Affects Sparsity in Cholesky</h3>
