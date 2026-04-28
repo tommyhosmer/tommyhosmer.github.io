@@ -83,20 +83,41 @@
     <h3>Purpose of the game</h3>
 
     <p>
-      Playing the game is supposed to help the user develop intuition between meshes and their representative connectivity matrices. In computational science, we develop algorithms to solve \(Ax = b\) as quickly as possible. For large A matrices, we often employ iterative methods such as conjugate gradients. The number of iterations it takes the conjugate gradient method to converge to a solution is dependent on the condition number of \(A\).
-      When a matrix is sparse (many of its entries are zero), then we have many algorithms to pull from to precondition (reduce the condition number of) matrix \(A\) and accelerate the solve. A popular choice is the Cholesky decomposition. For a matrix that is symmetric and positive definite, we can represent it as \(A = LL^T\), where \(L\) is a lower triangular matrix. Eventhough \(A\) is sparse, when decomposing it into \(L\), entries that were zero can "fill-in" and become nonzero.
-      When storing sparse matrices, compressed sparse row (CSR) format is used to store only non-zero entries. By increasing the count of nonzero entries when forming \(L\), the computation becomes more memory intensive and therefore slower. To get around the fill-in, some methods drop certain fill-in entries. This leads to \(\tilde{L}\), an approximation of \(L\). We avoid the fill-in, but \(\tilde{L}\) makes for a worse preconditioner so the condition number doesn't decrease as much. 
-      Solving for \(L\) can be thought of analogously as removing nodes from the mesh. 
-      In the "3x3 Grid" example, if one removes node 5, the number of nonzero (nnz) values increases from 24 to 28. This is because information was flowing through 5 from nodes 2, 4, 6, and 8 to nodes 2, 4, 6, and 8.
-      Without 5, we have to draw new connections (edges) in the mesh and update the grid so that the information may still be communicated. In a 3D or more complex setting, removals like this would be devastating for memory.
-      However, removing node 1, or any of the corner nodes for that matter, will decrease the nnz values. Information between nodes 2 and 4 flowed through 1, so, in the symmetric connectivity matrix, we dropped two edges for one.
-      Removing node 1 is beneficial. We are constructing a game where the player is rewarded for eliminating nodes that minimize fill-in of the final \(L\) matrix.
+      Playing the game is supposed to help the user develop intuition between meshes and their representative connectivity matrices. 
     </p>
+    <p>
+      In computational science, we develop algorithms to solve \(Ax = b\) as quickly as possible. 
+      For large \(A\) matrices, we often employ iterative methods, such as Conjugate Gradient (CG), which converge to solutions over many iterations. 
+      The number of iterations it takes CG to converge to a solution is dependent on the condition number of \(A\), \(\kappa(A)\).
+      When a matrix is sparse (many of its entries are zero), then we have many algorithms to pull from to precondition (reduce the condition number of) matrix \(A\) and accelerate the solve. 
+    </p>
+    <p>
+      A popular preconditioner is the incomplete Cholesky decomposition. 
+      For a matrix that is symmetric and positive definite, we can represent it as \(A = LL^T\), where \(L\) is a lower triangular matrix. 
+      \(A = LL^T\) is the full Cholesky factorization.
+      Even when \(A\) is sparse, during the Cholesky factorization entries that were zero in \(A\) can "fill-in" and become nonzero in \(L\). 
+      By increasing the count of nonzero entries when forming \(L\), more floating point operations are required, slowing the computation, and more floats need to be stored, requiring more memory. 
+      To get around the fill-in, some methods drop certain fill-in entries. 
+      This leads to \(\tilde{L}\), an approximation of \(L\). We avoid the fill-in, but \(\tilde{L}\) makes for a worse preconditioner so the condition number doesn't decrease as much. 
+    </p>
+    <p>
+      In the mesh game, forming \(L\) through Gaussian elimination is mathematically equivalent to removing nodes from the mesh one at a time.
+      Following the "3x3 Grid" example, if one removes node 5, then its neighbors (2,4,6,8) have to form new connections to continue communicating information that was originally passed through the connnections with node 5. 
+      This is the fill-in we wish to avoid.
+      However, removing node 1, or any of the corner nodes for that matter, will decrease the nnz values. 
+      Corner nodes like 1 have 2 neighbors.
+      When we drop the node, those two neighbors form a new connection to preserve the flow of information.
+      Ultimately, we dropped two edges for one, therefore removing node 1 is beneficial. 
+      This is a special case of the minimum degree heuristic, where eliminating nodes with small degrees (few edges) causes less fill-in than eliminating high degree nodes. 
+    </p>
+    
 
     <h3>How Node Elimination Order Affects Sparsity in Cholesky</h3>
 
     <p>
-      The visualization below shows different elimination orderings and their effect on the sparsity pattern of the lower triangular factor \(L\) for the Cholesky decomposition. The optimal ordering (corners first) minimizes fill-in, while poor orderings (center first) can dramatically increase the number of nonzeros. Because this is such a simple example, corners first and row-major ordering have the same effect on sparsity.
+      The visualization below shows different elimination orderings and their effect on the sparsity pattern of the lower triangular factor \(L\) for the Cholesky decomposition. 
+      The optimal ordering (corners first) minimizes fill-in, while poor orderings (center first) can dramatically increase the number of nonzeros. 
+      Because this is such a simple example, corners first and row-major ordering have the same effect on sparsity.
     </p>
 
     <!-- Node Elimination Ordering Visualization -->
@@ -371,7 +392,8 @@
 
     <h3>Future work</h3>
     <p>
-      The long term goal is to develop this into a game where the user strategizes to reduce nnz values. Once the game is finished and the reward function is determined, we wish to use it as a test environment for training an RL agent that can remove nodes in an order that reduces fill in of the L matrix and ultimately accelerate the full solve of \(Ax = b\).  
+      We are constructing a game where the player's objective is to discover an ordering that minimizes fill-in in the final \(L\) matrix.
+      Once the game is finished, we wish to use it as an environment for training an RL agent that can remove nodes in an order that reduces fill-in of the \(L\) matrix and ultimately accelerate the full solve of \(Ax = b\).  
     </p>
 
   </div>
