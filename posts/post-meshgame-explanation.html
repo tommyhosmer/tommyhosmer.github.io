@@ -89,10 +89,21 @@
       Playing the game is supposed to help the user develop intuition between meshes and their representative connectivity matrices. 
     </p>
     <p>
+      Gaussian elimination on a sparse symmetric matrix is a game played on a graph.
+      Eliminating a vertex means connecting all of its neighbors to each other, then deleting it.
+      The order you eliminate in is the only thing you control, and it decides almost everything about the cost of the solve:
+      how much memory the factor needs, how much of the work can run in parallel, and how good an approximate factor is as a preconditioner.
+      The dashboard scores the first of these — fill-in — because it is the easiest one to see.
+      The others are played on the same board.
+</p>
+
+    <p>
       In computational science, we develop algorithms to solve \(Ax = b\) as quickly as possible. 
       For large \(A\) matrices, we often employ iterative methods, such as Conjugate Gradient (CG), which converge to solutions over many iterations. 
-      The number of iterations it takes CG to converge to a solution is dependent on the condition number of \(A\), \(\kappa(A)\).
-      When a matrix is sparse (many of its entries are zero), then we have many algorithms to pull from to precondition (reduce the condition number of) matrix \(A\) and accelerate the solve. 
+      The number of iterations it takes CG to converge to a solution is dependent on the spectrum of \(A\), with the classical bound scaling with \(\sqrt{\kappa(A)}\), where \(\kappa\) is the condition number of A.
+      We have many algorithms to pull from to precondition matrix \(A\) and accelerate the solve. 
+      Precondtioning typically involves selecting a matrix \(M\) that is cheap to invert and solve an equivalent system governed by \(M^{-1}A\), hoping that \(\kappa(M^{-1}A) \ll \kappa(A)\).
+      When \(A\) is sparse (has many zero entries), we look to partially factorize it to construct \(M\).
     </p>
     <p>
       A popular preconditioner is the incomplete Cholesky decomposition. 
@@ -101,17 +112,19 @@
       Even when \(A\) is sparse, during the Cholesky factorization entries that were zero in \(A\) can "fill-in" and become nonzero in \(L\). 
       By increasing the count of nonzero entries when forming \(L\), more floating point operations are required, slowing the computation, and more floats need to be stored, requiring more memory. 
       To get around the fill-in, some methods drop certain fill-in entries. 
-      This leads to \(\tilde{L}\), an approximation of \(L\). We avoid the fill-in, but \(\tilde{L}\) makes for a worse preconditioner so the condition number doesn't decrease as much. 
+      This leads to \(\tilde{L}\), an approximation of \(L\). We avoid the fill-in, but \(\tilde{L}\) makes for a worse preconditioner so the condition number doesn't decrease as much.
+      The tradeoff is do we take more time and memory to more closely approximate \(A\) for a better preconditioner, or do we accept the precconditioner's quality and move on to the iterative solver.
     </p>
     <p>
       In the mesh game, forming \(L\) through Gaussian elimination is mathematically equivalent to removing nodes from the mesh one at a time.
       Following the "3x3 Grid" example, if one removes node 5, then its neighbors (2,4,6,8) have to form new connections to continue communicating information that was originally passed through the connnections with node 5. 
       This is the fill-in we wish to avoid.
-      However, removing node 1, or any of the corner nodes for that matter, will decrease the nnz values. 
-      Corner nodes like 1 have 2 neighbors.
+      However, removing node 1, or any of the corner nodes for that matter, is cheaper. 
+      Corner nodes like 1 have two neighbors, so dropping the node deletes two edges.
       When we drop the node, those two neighbors form a new connection to preserve the flow of information.
       Ultimately, we dropped two edges for one, therefore removing node 1 is beneficial. 
       This is a special case of the minimum degree heuristic, where eliminating nodes with small degrees (few edges) causes less fill-in than eliminating high degree nodes. 
+      However, the method is greedy and not fully optimal, so the elimination ordering is still an interesting problem.
     </p>
     
 
